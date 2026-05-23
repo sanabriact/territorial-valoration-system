@@ -1,1 +1,132 @@
-/* You can add global styles to this file, and also import other style files */
+html,
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.login-container {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: #f1f5f9;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+
+  padding: 40px;
+
+  border-radius: 28px;
+
+  border: 1px solid #e2e8f0;
+
+  background: white;
+
+  box-shadow:
+    0 10px 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+.login-header {
+  text-align: center;
+
+  margin-bottom: 32px;
+
+  h1 {
+    margin: 0;
+
+    font-size: 2.2rem;
+    font-weight: 700;
+
+    color: #1e293b;
+  }
+
+  p {
+    margin-top: 10px;
+
+    font-size: 0.95rem;
+
+    color: #64748b;
+  }
+}
+
+.login-buttons {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.login-button {
+  height: 56px;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 18px;
+
+  background: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  color: #334155;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    background: #f8fafc;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+      0 6px 20px rgba(15, 23, 42, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+  }
+
+  img,
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.loading-box {
+  margin-top: 20px;
+
+  padding: 14px;
+
+  border-radius: 16px;
+
+  background: #eff6ff;
+
+  border: 1px solid #bfdbfe;
+
+  text-align: center;
+
+  p {
+    margin: 0;
+
+    color: #2563eb;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+}
