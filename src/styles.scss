@@ -1,6 +1,22 @@
+@use "tailwindcss";
+
 html,
 body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
   font-family: 'Inter', sans-serif;
+
+  background: #f8fafc;
+}
+
+body {
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 .login-container {
@@ -129,4 +145,69 @@ body {
     font-size: 0.9rem;
     font-weight: 600;
   }
+}
+
+.sidebar-item {
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 0 14px;
+
+  border-radius: 16px;
+
+  text-decoration: none;
+
+  color: #334155;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.sidebar-item:hover {
+  background: #f8fafc;
+}
+
+.sidebar-icon {
+  font-size: 21px;
+}
+
+.sidebar-label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sidebar-active {
+  background: #eff6ff;
+  color: #2563eb;
+
+  position: relative;
+}
+
+.sidebar-active::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 10px;
+
+  width: 4px;
+  height: 32px;
+
+  border-radius: 999px;
+
+  background: #2563eb;
+}
+
+.sidebar-container {
+    width: 240px !important;
+
+    border-right: 1px solid #e2e8f0;
+
+    background: white;
 }

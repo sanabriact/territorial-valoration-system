@@ -1,0 +1,33 @@
+<mat-sidenav-container class="h-screen bg-slate-50">
+
+    <!-- SIDEBAR -->
+    <mat-sidenav mode="side" opened disableClose class="sidebar-container">
+
+        <app-sidebar [user]="user">
+        </app-sidebar>
+
+    </mat-sidenav>
+
+    <!-- CONTENT -->
+    <mat-sidenav-content class="content-container">
+
+        <div class="flex flex-col h-screen">
+
+            <!-- HEADER -->
+            <app-header 
+            [title]="pageTitle" 
+            [subtitle]="pageSubtitle" 
+            [showGuideButton]="false" 
+            [user]="user">
+            </app-header>
+
+            <!-- PAGE -->
+            <main class="flex-1 overflow-y-auto p-8">
+                <router-outlet></router-outlet>
+            </main>
+
+        </div>
+
+    </mat-sidenav-content>
+
+</mat-sidenav-container>
