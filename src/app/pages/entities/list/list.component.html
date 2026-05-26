@@ -1,0 +1,15 @@
+  <app-generic-table
+  cardTitle="Entidades registradas"
+  cardSubtitle="Consulta, edita o elimina las entidades del sistema."
+  newButtonLabel="Nueva entidad"
+  searchPlaceholder="Buscar por nombre..."
+  emptyMessage="No se encontraron entidades registradas."
+  [columns]="columns"
+  [data]="entities()"
+  [pagination]="pagination()"
+  [actions]="actions"
+  [loading]="loading()"
+  (searchChanged)="onSearch($event)"
+  (actionClicked)="onActionClicked($event)"
+  (pageChanged)="onPageChange($event)"
+/>

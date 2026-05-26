@@ -2,10 +2,8 @@
 
     <!-- SIDEBAR -->
     <mat-sidenav mode="side" opened disableClose class="sidebar-container">
-
         <app-sidebar [user]="user">
         </app-sidebar>
-
     </mat-sidenav>
 
     <!-- CONTENT -->
@@ -15,8 +13,8 @@
 
             <!-- HEADER -->
             <app-header 
-            [title]="pageTitle" 
-            [subtitle]="pageSubtitle" 
+            [title]="title()"
+            [subtitle]="subtitle()" 
             [showGuideButton]="false" 
             [user]="user">
             </app-header>
