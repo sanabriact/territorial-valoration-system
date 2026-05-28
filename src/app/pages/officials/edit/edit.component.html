@@ -1,0 +1,8 @@
+<app-official-form 
+    mode="edit" [entities]="entities()" 
+    [official]="official()" 
+    [loading]="loading()" 
+    [saving]="saving()"
+    (formSubmit)="save($event)" 
+    (formCancel)="cancel()" 
+/>

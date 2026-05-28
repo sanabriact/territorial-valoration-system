@@ -12,17 +12,8 @@ import { OfficialService } from '../../../services/officials/official.service';
   selector: 'app-official-edit',
   standalone: true,
   imports: [OfficialFormComponent],
-  template: `
-    <app-official-form
-      mode="edit"
-      [entities]="entities()"
-      [official]="official()"
-      [loading]="loading()"
-      [saving]="saving()"
-      (formSubmit)="save($event)"
-      (formCancel)="cancel()"
-    />
-  `,
+  templateUrl: './edit.component.html',
+  styleUrl: './edit.component.scss'
 })
 export class OfficialEditComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

@@ -12,16 +12,8 @@ import { OfficialService } from '../../../services/officials/official.service';
     selector: 'app-official-create',
     standalone: true,
     imports: [OfficialFormComponent],
-    template: `
-    <app-official-form
-      mode="create"
-      [entities]="entities()"
-      [loading]="loading()"
-      [saving]="saving()"
-      (formSubmit)="save($event)"
-      (formCancel)="cancel()"
-    />
-  `,
+    templateUrl:'./create.component.html',
+    styleUrl:'./create.component.scss'
 })
 export class OfficialCreateComponent implements OnInit {
     private readonly entityService = inject(EntityService);
