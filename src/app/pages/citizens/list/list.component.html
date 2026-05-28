@@ -1,0 +1,15 @@
+  <app-generic-table
+  cardTitle="Ciudadanos registrados"
+  cardSubtitle="Administra la información de los ciudadanos registrados en el sistema."
+  newButtonLabel="Nuevo ciudadano"
+  searchPlaceholder="Buscar por nombre, correo o celular..."
+  emptyMessage="No se encontraron ciudadanos registrados."
+  [columns]="columns"
+  [data]="tableCitizens()"
+  [pagination]="pagination()"
+  [actions]="actions"
+  [loading]="loading()"
+  (searchChanged)="onSearch($event)"
+  (actionClicked)="onActionClicked($event)"
+  (pageChanged)="onPageChange($event)"
+/>

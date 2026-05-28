@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize, map, switchMap, take } from 'rxjs';
 import Swal from 'sweetalert2';
-import { EntitiesFormComponent } from '../components/entities-form/entities-form.component';
+import { EntitiesFormComponent } from '../entities-form/entities-form.component';
 import { Entity } from '../../../models/Entity';
 import { EntityService } from '../../../services/entities/entities.service';
 import { EntityFormValue } from '../../../models/interfaces/form/EntityFormValue';

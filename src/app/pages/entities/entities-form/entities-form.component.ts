@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Entity, EntityFormValue, EntityStatus } from '../../../../models/Entity';
+import { Entity, EntityStatus } from '../../../models/Entity';
+import { EntityFormValue } from '../../../models/interfaces/form/EntityFormValue';
 
 export type EntityFormMode = 'create' | 'edit';
 

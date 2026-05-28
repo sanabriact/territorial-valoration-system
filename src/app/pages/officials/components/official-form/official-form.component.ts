@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Entity } from '../../../../models/Entity';
-import { Official, OfficialFormValue, OfficialStatus } from '../../../../models/Official';
+import { Official, OfficialStatus } from '../../../../models/Official';
+import { OfficialFormValue } from '../../../../models/interfaces/form/OfficialFormValue';
 
 export type OfficialFormMode = 'create' | 'edit';
 
@@ -25,7 +26,7 @@ export class OfficialFormComponent {
   readonly formSubmit = output<OfficialFormValue>();
   readonly formCancel = output<void>();
 
-  readonly roles = ['ADMIN', 'FUNCIONARIO'];
+  readonly roles = ['FUNCIONARIO'];
 
   readonly title = computed(() =>
     this.mode() === 'edit' ? 'Editar funcionario' : 'Agregar funcionario',
