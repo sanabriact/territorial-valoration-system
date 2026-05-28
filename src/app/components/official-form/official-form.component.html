@@ -1,0 +1,80 @@
+<section class="official-form-page">
+  <div class="official-form-card">
+    <header class="official-form-header">
+      <div>
+        <h1>{{ title() }}</h1>
+        <p>{{ subtitle() }}</p>
+      </div>
+
+      <button type="button" class="official-button official-button--secondary" (click)="cancel()">
+        Volver
+      </button>
+    </header>
+
+    <div class="official-loading" *ngIf="loading()">
+      Cargando...
+    </div>
+
+    <form class="official-form" [formGroup]="officialForm" (ngSubmit)="save()" *ngIf="!loading()">
+      <label class="official-field">
+        <span>Entidad</span>
+        <select formControlName="id_entity">
+          <option [ngValue]="0">Selecciona una entidad</option>
+          <option *ngFor="let entity of entities()" [ngValue]="entity.id_entity">
+            {{ entity.name }}
+          </option>
+        </select>
+        <small *ngIf="hasFieldError('id_entity')">Selecciona una entidad registrada.</small>
+      </label>
+
+      <label class="official-field">
+        <span>Nombre</span>
+        <input type="text" formControlName="name" placeholder="Nombre completo" />
+        <small *ngIf="hasFieldError('name')">Ingresa al menos 3 caracteres.</small>
+      </label>
+
+      <label class="official-field">
+        <span>Correo</span>
+        <input type="email" formControlName="email" placeholder="correo@dominio.com" />
+        <small *ngIf="hasFieldError('email')">Ingresa un correo valido.</small>
+      </label>
+
+      <label class="official-field">
+        <span>Cargo</span>
+        <input type="text" formControlName="position" placeholder="Ej. Inspector urbano" />
+        <small *ngIf="hasFieldError('position')">Ingresa el cargo del funcionario.</small>
+      </label>
+
+      <label class="official-field">
+        <span>Rol</span>
+        <select formControlName="role">
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+        <small *ngIf="hasFieldError('role')">Selecciona un rol.</small>
+      </label>
+
+      <label class="official-field">
+        <span>Celular</span>
+        <input type="tel" formControlName="phone" placeholder="3001234567" />
+        <small *ngIf="hasFieldError('phone')">Ingresa un celular valido.</small>
+      </label>
+
+      <label class="official-field">
+        <span>Estado</span>
+        <select formControlName="status">
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+        </select>
+      </label>
+
+      <footer class="official-form-actions">
+        <button type="button" class="official-button official-button--secondary" (click)="cancel()">
+          Cancelar
+        </button>
+        <button type="submit" class="official-button official-button--primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </footer>
+    </form>
+  </div>
+</section>

@@ -1,0 +1,17 @@
+<section class="officials-page">
+  <app-generic-table
+    cardTitle="Funcionarios registrados"
+    cardSubtitle="Crea, edita, desactiva o elimina funcionarios vinculados a una entidad."
+    searchPlaceholder="Buscar por nombre, correo, entidad o rol..."
+    emptyMessage="No se encontraron funcionarios registrados."
+    [columns]="columns"
+    [data]="tableOfficials()"
+    [pagination]="pagination()"
+    [actions]="actions"
+    [loading]="loading()"
+    [showFilters]="false"
+    (searchChanged)="onSearch($event)"
+    (actionClicked)="onActionClicked($event)"
+    (pageChanged)="onPageChange($event)"
+  />
+</section>

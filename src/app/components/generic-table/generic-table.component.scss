@@ -314,6 +314,19 @@ $delete-color: #dc2626;        // Rojo para la papelera de eliminación
     height: 18px;
   }
 
+  &__custom-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  &__custom-label {
+    min-width: 18px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 18px;
+  }
+
   &--edit {
     color: $edit-color;
     &:hover {
@@ -325,6 +338,20 @@ $delete-color: #dc2626;        // Rojo para la papelera de eliminación
     color: $delete-color;
     &:hover {
       background-color: rgba($delete-color, 0.08);
+    }
+  }
+
+  &--custom {
+    color: #475569;
+    &:hover {
+      background-color: rgba(71, 85, 105, 0.08);
+    }
+  }
+
+  &--add {
+    color: $edit-color;
+    &:hover {
+      background-color: rgba($edit-color, 0.08);
     }
   }
   

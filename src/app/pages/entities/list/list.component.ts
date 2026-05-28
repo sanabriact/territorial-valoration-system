@@ -3,7 +3,7 @@ import { Component, inject, OnInit, signal } from "@angular/core";
 import { Entity } from "../../../models/Entity";
 import { GenericTableComponent } from "../../../components/generic-table/generic-table.component";
 import { PaginationInfo, TableAction, TableColumn } from "../../../models/components/generic-table/generic-table-types";
-import { EntityService } from "../../../services/entities/entitiesService";
+import { EntityService } from "../../../services/entities/entities.service";
 import { Router } from "@angular/router";
 
 @Component({
@@ -38,6 +38,7 @@ export class EntitiesListComponent implements OnInit {
 
     readonly actions: TableAction[] = [
         { id: 'create-entity', icon: 'add', label: 'Nueva entidad', isGlobal: true },
+        { id: 'add-official', icon: 'add', tooltip: 'Agregar funcionario' },
         { id: 'edit', icon: 'edit', tooltip: 'Editar entidad' },
         { id: 'delete', icon: 'delete', tooltip: 'Eliminar entidad' },
     ];
@@ -82,10 +83,13 @@ export class EntitiesListComponent implements OnInit {
 
     onActionClicked(event: { actionId: string; row: any }): void {
         switch (event.actionId) {
-            case 'edit': 
+            case 'edit':
                 this.openEditEntity(event.row)
                 break;
-            case 'delete': 
+            case 'add-official':
+                this.addOfficial()
+                break;
+            case 'delete':
                 this.openDeleteEntity(event.row)
                 break;
             case 'create-entity':
@@ -95,7 +99,7 @@ export class EntitiesListComponent implements OnInit {
     }
 
     private openEditEntity(entity: any) {
-        console.log('Editar:', entity); 
+        console.log('Editar:', entity);
         this.router.navigate([`/administration/entities/edit/${entity.id_entity}`])
     }
 
@@ -103,8 +107,12 @@ export class EntitiesListComponent implements OnInit {
         console.log('Eliminar: ', entity)
     }
 
-    private openNewEntityPanel(): void { 
-        console.log('Crear nueva entidad'); 
+    private openNewEntityPanel(): void {
+        console.log('Crear nueva entidad');
         this.router.navigate([`/administration/entities/create`])
+    }
+
+    private addOfficial(): void {
+        this.router.navigate([`/administration/officials`])
     }
 }

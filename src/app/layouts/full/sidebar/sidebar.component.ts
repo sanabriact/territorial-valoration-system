@@ -87,7 +87,7 @@ export class SidebarComponent implements OnInit {
                 {
                     label: 'Funcionarios',
                     icon: 'solar:users-group-rounded-linear',
-                    route: '/administration/functionaries',
+                    route: '/administration/officials',
                 },
                 {
                     label: 'Ciudadanos',

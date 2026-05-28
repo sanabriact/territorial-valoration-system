@@ -1,0 +1,128 @@
+.official-form-page {
+  width: 100%;
+}
+
+.official-form-card {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.official-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid #e2e8f0;
+
+  h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+}
+
+.official-loading {
+  padding: 40px 24px;
+  color: #64748b;
+  font-weight: 700;
+  text-align: center;
+}
+
+.official-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 24px;
+}
+
+.official-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  span {
+    color: #334155;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  input,
+  select {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 0 12px;
+    color: #0f172a;
+    background: #ffffff;
+    outline: none;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  small {
+    color: #dc2626;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+}
+
+.official-form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.official-button {
+  min-width: 110px;
+  min-height: 42px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 800;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+}
+
+.official-button--primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.official-button--secondary {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+}
+
+@media (max-width: 720px) {
+  .official-form-header,
+  .official-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .official-form {
+    grid-template-columns: 1fr;
+  }
+}

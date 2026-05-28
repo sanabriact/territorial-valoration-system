@@ -171,6 +171,8 @@
                                         [class.gt-action-btn--edit]="action.icon === 'edit'"
                                         [class.gt-action-btn--delete]="action.icon === 'delete'"
                                         [class.gt-action-btn--view]="action.icon === 'view'"
+                                        [class.gt-action-btn--add]="action.icon === 'add'"
+                                        [class.gt-action-btn--custom]="action.icon === 'custom'"
                                         [class]="action.buttonClass ?? ''" [disabled]="isActionDisabled(action, row)"
                                         [title]="action.tooltip ?? ''" (click)="onActionClicked(action.id, row)"
                                         type="button">
@@ -192,6 +194,21 @@
                                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                                             <circle cx="12" cy="12" r="3" />
                                         </svg>
+                                        <svg *ngIf="action.icon === 'add'" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2.5">
+                                            <line x1="12" y1="5" x2="12" y2="19" />
+                                            <line x1="5" y1="12" x2="19" y2="12" />
+                                        </svg>
+                                        <ng-container *ngIf="action.icon === 'custom'">
+                                            <iconify-icon *ngIf="action.customIcon; else customText"
+                                                [icon]="action.customIcon" class="gt-action-btn__custom-icon">
+                                            </iconify-icon>
+                                            <ng-template #customText>
+                                                <span class="gt-action-btn__custom-label">
+                                                    {{ action.customLabel ?? action.label ?? action.id }}
+                                                </span>
+                                            </ng-template>
+                                        </ng-container>
                                     </button>
                                 </ng-container>
                             </div>

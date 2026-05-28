@@ -44,6 +44,8 @@ export interface TableAction {
   id: string;
   /** Ícono SVG o clase de ícono */
   icon: 'edit' | 'delete' | 'view' | 'custom' | 'add';
+  customIcon?: string;
+  customLabel?: string;
   /** Tooltip */
   tooltip?: string;
   /** Clase CSS del botón */
