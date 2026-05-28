@@ -1,3 +1,5 @@
+export type CitizenStatus = 'active' | 'inactive';
+
 export interface Citizen {
     address: string;
     email: string;
@@ -6,5 +8,5 @@ export interface Citizen {
     longitude: number;
     name: string;
     phone: string;
-    status: "active" | "inactive";
+    status: CitizenStatus;
 }

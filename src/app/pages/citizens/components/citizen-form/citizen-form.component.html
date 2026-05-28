@@ -1,0 +1,71 @@
+<section class="citizen-form-page">
+  <header class="citizen-form-header">
+    <div>
+      <h1>{{ title() }}</h1>
+      <p>{{ subtitle() }}</p>
+    </div>
+
+    <button type="button" class="citizen-button citizen-button--secondary" (click)="cancel()">
+      Volver
+    </button>
+  </header>
+
+  <div class="citizen-loading" *ngIf="loading()">Cargando...</div>
+
+  <form class="citizen-form-layout" [formGroup]="citizenForm" (ngSubmit)="save()" *ngIf="!loading()">
+    <section class="citizen-form-card">
+      <div class="citizen-form-card__body">
+        <h2>Informacion personal</h2>
+
+        <label class="citizen-field">
+          <span>Nombre completo</span>
+          <input type="text" formControlName="name" placeholder="Ej. Maria Alejandra Garcia" />
+          <small *ngIf="hasFieldError('name')">Ingresa al menos 3 caracteres.</small>
+        </label>
+
+        <label class="citizen-field">
+          <span>Correo electronico</span>
+          <input type="email" formControlName="email" placeholder="Ej. maria.garcia@email.com" />
+          <small *ngIf="hasFieldError('email')">Ingresa un correo valido.</small>
+        </label>
+
+        <label class="citizen-field">
+          <span>Celular</span>
+          <input type="tel" formControlName="phone" placeholder="Ej. 310 456 7890" />
+          <small *ngIf="hasFieldError('phone')">Ingresa un celular valido.</small>
+        </label>
+
+        <label class="citizen-field">
+          <span>Estado</span>
+          <select formControlName="status">
+            <option value="active">Activo</option>
+            <option value="inactive">Inactivo</option>
+          </select>
+        </label>
+
+        <div class="citizen-location-summary" [class.citizen-location-summary--error]="hasLocationError()">
+          <span>Direccion</span>
+          <strong>{{ selectedLocation()?.address || 'Seleccion pendiente' }}</strong>
+          <small *ngIf="hasLocationError()">Selecciona una ubicacion valida en el mapa.</small>
+          <small *ngIf="mode() === 'edit' && selectedLocation()">La ubicacion no se puede modificar.</small>
+        </div>
+      </div>
+
+      <footer class="citizen-form-actions">
+        <button type="button" class="citizen-button citizen-button--secondary" (click)="cancel()">
+          Cancelar
+        </button>
+        <button type="submit" class="citizen-button citizen-button--primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando...' : 'Guardar ciudadano' }}
+        </button>
+      </footer>
+    </section>
+
+    <app-citizen-location-picker
+      [initialLocation]="selectedLocation()"
+      [readonly]="mode() === 'edit'"
+      (locationSelected)="onLocationSelected($event)"
+      (locationCleared)="onLocationCleared()"
+    />
+  </form>
+</section>

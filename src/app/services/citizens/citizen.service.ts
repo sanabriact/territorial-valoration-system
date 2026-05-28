@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environments';
 import { Citizen } from '../../models/Citizen';
@@ -22,16 +22,16 @@ export class CitizenService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Obtener todas las entidades
-   * GET /entities
+   * Obtener todos los ciudadanos
+   * GET /citizens
    */
   getAll(): Observable<Citizen[]> {
     return this.http.get<Citizen[]>(this.apiUrl);
   }
 
   /**
-   * Obtener entidades paginadas
-   * GET /entities?page=&pageSize=
+   * Obtener ciudadanos paginados
+   * GET /citizens?page=&pageSize=
    */
   getPaged(page: number, pageSize: number): Observable<CitizenPagedResponse> {
     const params = new HttpParams()
@@ -42,46 +42,63 @@ export class CitizenService {
   }
 
   /**
-   * Obtener entidad por ID
-   * GET /entities/:id
+   * Obtener ciudadano por ID
+   * GET /citizens/:id
    */
   getById(id: number): Observable<Citizen> {
     return this.http.get<Citizen>(`${this.apiUrl}/${id}`);
   }
 
   /**
-   * Crear entidad
-   * POST /entities
+   * Crear ciudadano
+   * POST /citizens
    */
   create(citizen: Citizen): Observable<Citizen> {
-    return this.http.post<Citizen>(this.apiUrl, this.toFormData(citizen));
+    return this.http.post<Citizen>(this.apiUrl, this.toRequestBody(citizen));
   }
 
   /**
-   * Actualizar entidad completa
-   * PUT /entities/:id
+   * Actualizar ciudadano completo
+   * PUT /citizens/:id
    */
   update(id: number, citizen: Citizen): Observable<Citizen> {
-    return this.http.put<Citizen>(`${this.apiUrl}/${id}`, this.toFormData(citizen));
+    return this.http.put<Citizen>(`${this.apiUrl}/${id}`, this.toRequestBody(citizen));
   }
 
   /**
-   * Eliminar entidad
-   * DELETE /entities/:id
+   * Eliminar ciudadano
+   * DELETE /citizens/:id
    */
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  private toFormData(citizen: Citizen): FormData {
-    const formData = new FormData();
+  /**
+   * Validar correo registrado
+   */
+  existsByEmail(email: string, excludedCitizenId?: number): Observable<boolean> {
+    const normalizedEmail = email.trim().toLowerCase();
 
-    formData.append('name', citizen.name.trim());
-    formData.append('email', citizen.email.trim().toLowerCase());
-    formData.append('phone', citizen.phone.trim());
-    /* formData.append('address', (citizen.address ?? citizen.adress ?? '').trim()); */
-    formData.append('status', String(citizen.status));
+    return this.getAll().pipe(
+      map((citizens) =>
+        citizens.some(
+          (citizen) =>
+            citizen.email.trim().toLowerCase() === normalizedEmail &&
+            citizen.id_citizen !== excludedCitizenId,
+        ),
+      ),
+    );
+  }
 
-    return formData;
+  private toRequestBody(citizen: Citizen): Record<string, unknown> {
+    return {
+      name: citizen.name.trim(),
+      email: citizen.email.trim().toLowerCase(),
+      phone: citizen.phone.trim(),
+      address: citizen.address.trim(),
+      latitude: Number(citizen.latitude),
+      longitude: Number(citizen.longitude),
+      status: citizen.status,
+    };
   }
 }

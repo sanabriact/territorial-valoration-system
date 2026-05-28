@@ -6,17 +6,17 @@ export const citizensRoutes: Routes = [
         loadComponent: () =>
             import('./list/list.component').then((module) => module.CitizenListComponent),
         data: {
-            title: 'Gestión de ciudadanos',
-            subtitle: 'Administra la información de los ciudadanos registrados en el sistema.',
+            title: 'Gestion de ciudadanos',
+            subtitle: 'Administra la informacion de los ciudadanos registrados en el sistema.',
         },
     },
-    /* {
+    {
         path: 'administration/citizens/create',
         loadComponent: () =>
             import('./create/create.component').then((module) => module.CitizenCreateComponent),
         data: {
             title: 'Nuevo ciudadano',
-            subtitle: 'Completa la información del ciudadano. La ubicación se selecciona en el mapa.',
+            subtitle: 'Completa la informacion del ciudadano. La ubicacion se selecciona en el mapa.',
         },
     },
     {
@@ -27,5 +27,5 @@ export const citizensRoutes: Routes = [
             title: 'Editar ciudadano',
             subtitle: 'Actualiza los datos de un ciudadano.',
         },
-    }, */
+    },
 ];
