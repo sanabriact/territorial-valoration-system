@@ -40,12 +40,6 @@
       </label>
 
       <label class="official-field">
-        <span>Cargo</span>
-        <input type="text" formControlName="position" placeholder="Ej. Inspector urbano" />
-        <small *ngIf="hasFieldError('position')">Ingresa el cargo del funcionario.</small>
-      </label>
-
-      <label class="official-field">
         <span>Rol</span>
         <select formControlName="role">
           <option *ngFor="let role of roles" [value]="role">{{ role }}</option>

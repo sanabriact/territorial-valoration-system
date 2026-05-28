@@ -41,7 +41,6 @@ export class OfficialFormComponent {
     id_entity: [0, [Validators.required, Validators.min(1)]],
     name: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
-    position: ['', [Validators.required, Validators.minLength(2)]],
     role: ['FUNCIONARIO', [Validators.required]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9+()\s-]{7,20}$/)]],
     status: ['active' as OfficialStatus, [Validators.required]],

@@ -7,7 +7,6 @@ export interface Official {
   email: string;
   phone: string;
   role: string;
-  position?: string;
   status: OfficialStatus | string;
   last_latitude?: number | null;
   last_longitude?: number | null;

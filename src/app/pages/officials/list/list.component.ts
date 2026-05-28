@@ -26,7 +26,6 @@ export class OfficialsListComponent implements OnInit {
   readonly columns: TableColumn[] = [
     { key: 'name', label: 'Nombre' },
     { key: 'email', label: 'Correo' },
-    { key: 'position', label: 'Cargo' },
     { key: 'role', label: 'Rol' },
     { key: 'phone', label: 'Celular' },
     { key: 'entityName', label: 'Entidad' },
@@ -71,7 +70,6 @@ export class OfficialsListComponent implements OnInit {
     this.filteredOfficials().map((official) => ({
       ...official,
       entityName: this.getEntityName(official.id_entity),
-      position: official.position || 'Sin cargo',
     })),
   );
 
@@ -204,7 +202,6 @@ export class OfficialsListComponent implements OnInit {
         official.email,
         official.phone,
         official.role,
-        official.position,
         this.getEntityName(official.id_entity),
       ]
         .filter(Boolean)
