@@ -1,0 +1,92 @@
+<section class="entity-form-page">
+  <div class="entity-form-card">
+    <header class="entity-form-header">
+      <div>
+        <h1>{{ title() }}</h1>
+        <p>{{ subtitle() }}</p>
+      </div>
+
+      <button type="button" class="entity-button entity-button--secondary" (click)="cancel()">
+        Volver
+      </button>
+    </header>
+
+    <div class="entity-loading" *ngIf="loading()">
+      Cargando...
+    </div>
+
+    <form class="entity-form" [formGroup]="entityForm" (ngSubmit)="save()" *ngIf="!loading()">
+      <div class="entity-logo-panel">
+        <img [src]="logoPreview()" alt="Logo de la entidad" />
+
+        <label class="entity-file">
+          <span>Subir logo</span>
+          <input type="file" accept="image/*" (change)="onLogoSelected($event)" />
+        </label>
+      </div>
+
+      <div class="entity-fields">
+        <label class="entity-field">
+          <span>Nombre</span>
+          <input type="text" formControlName="name" placeholder="Nombre de la entidad" />
+          <small *ngIf="hasFieldError('name')">Ingresa al menos 3 caracteres.</small>
+        </label>
+
+        <label class="entity-field">
+          <span>Tipo de entidad</span>
+          <select formControlName="type">
+            <option *ngFor="let type of entityTypes" [value]="type.value">{{ type.label }}</option>
+          </select>
+          <small *ngIf="hasFieldError('type')">Selecciona un tipo.</small>
+        </label>
+
+        <label class="entity-field entity-field--full">
+          <span>Descripcion</span>
+          <textarea rows="4" formControlName="description" placeholder="Descripcion institucional"></textarea>
+          <small *ngIf="hasFieldError('description')">Ingresa al menos 5 caracteres.</small>
+        </label>
+
+        <label class="entity-field">
+          <span>NIT</span>
+          <input type="text" formControlName="nit" placeholder="900123456-7" />
+          <small *ngIf="hasFieldError('nit')">Ingresa un NIT valido.</small>
+        </label>
+
+        <label class="entity-field">
+          <span>Telefono</span>
+          <input type="tel" formControlName="phone" placeholder="3001234567" />
+          <small *ngIf="hasFieldError('phone')">Ingresa un telefono valido.</small>
+        </label>
+
+        <label class="entity-field">
+          <span>Correo electronico</span>
+          <input type="email" formControlName="email" placeholder="contacto@entidad.com" />
+          <small *ngIf="hasFieldError('email')">Ingresa un correo valido.</small>
+        </label>
+
+        <label class="entity-field">
+          <span>Estado</span>
+          <select formControlName="status">
+            <option value="active">Activa</option>
+            <option value="inactive">Inactiva</option>
+          </select>
+        </label>
+
+        <label class="entity-field entity-field--full">
+          <span>Direccion</span>
+          <input type="text" formControlName="address" placeholder="Direccion de la entidad" />
+          <small *ngIf="hasFieldError('address')">Ingresa al menos 5 caracteres.</small>
+        </label>
+
+        <footer class="entity-form-actions">
+          <button type="button" class="entity-button entity-button--secondary" (click)="cancel()">
+            Cancelar
+          </button>
+          <button type="submit" class="entity-button entity-button--primary" [disabled]="saving()">
+            {{ saving() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </div>
+    </form>
+  </div>
+</section>

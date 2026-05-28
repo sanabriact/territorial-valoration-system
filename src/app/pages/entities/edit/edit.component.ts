@@ -1,0 +1,144 @@
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { finalize, forkJoin, map, switchMap, take } from 'rxjs';
+import Swal from 'sweetalert2';
+import { EntitiesFormComponent } from '../../../components/entities-form/entities-form.component';
+import { Entity, EntityFormValue } from '../../../models/Entity';
+import { EntityService } from '../../../services/entities/entities.service';
+
+@Component({
+  selector: 'app-entity-edit',
+  standalone: true,
+  imports: [EntitiesFormComponent],
+  template: `
+    <app-entities-form
+      mode="edit"
+      [entity]="entity()"
+      [loading]="loading()"
+      [saving]="saving()"
+      (formSubmit)="save($event)"
+      (formCancel)="cancel()"
+    />
+  `,
+})
+export class EntityEditComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly entityService = inject(EntityService);
+  private readonly router = inject(Router);
+
+  readonly entityId = computed(() => Number(this.route.snapshot.paramMap.get('id')));
+  readonly entity = signal<Entity | null>(null);
+  readonly loading = signal(false);
+  readonly saving = signal(false);
+
+  ngOnInit(): void {
+    this.loadEntity();
+  }
+
+  save(formValue: EntityFormValue): void {
+    const currentEntity = this.entity();
+
+    if (!currentEntity) {
+      void Swal.fire('Error', 'No se encontro la entidad a editar.', 'error');
+      this.cancel();
+      return;
+    }
+
+    this.saving.set(true);
+    this.entityService
+      .getAll()
+      .pipe(
+        take(1),
+        map((entities) => this.hasDuplicatedName(entities, formValue.name, currentEntity.id_entity)),
+        switchMap((nameExists) => {
+          if (nameExists) {
+            throw new Error('ENTITY_NAME_EXISTS');
+          }
+
+          return this.entityService.update(
+            currentEntity.id_entity,
+            this.toFormData(formValue, currentEntity.id_entity) as unknown as Entity,
+          );
+        }),
+        finalize(() => this.saving.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          void Swal.fire('Listo', 'La entidad fue actualizada correctamente.', 'success');
+          this.cancel();
+        },
+        error: (error) => this.handleSaveError(error),
+      });
+  }
+
+  cancel(): void {
+    void this.router.navigate(['/administration/entities']);
+  }
+
+  private loadEntity(): void {
+    const entityId = this.entityId();
+
+    if (!entityId) {
+      void Swal.fire('Error', 'No se encontro la entidad a editar.', 'error');
+      this.cancel();
+      return;
+    }
+
+    this.loading.set(true);
+    forkJoin({
+      entity: this.entityService.getById(entityId),
+    })
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: ({ entity }) => this.entity.set(entity),
+        error: () => {
+          void Swal.fire('Error', 'No se pudo cargar la informacion del formulario.', 'error');
+          this.cancel();
+        },
+      });
+  }
+
+  private hasDuplicatedName(entities: Entity[], name: string, excludedEntityId: number): boolean {
+    const normalizedName = this.normalizeText(name);
+
+    return entities.some(
+      (entity) =>
+        this.normalizeText(entity.name) === normalizedName &&
+        entity.id_entity !== excludedEntityId,
+    );
+  }
+
+  private handleSaveError(error: unknown): void {
+    if (error instanceof Error && error.message === 'ENTITY_NAME_EXISTS') {
+      void Swal.fire('Entidad duplicada', 'Ya existe una entidad con ese nombre. El sistema cancelo la operacion.', 'warning');
+      return;
+    }
+
+    void Swal.fire('Error', 'No se pudo guardar la entidad.', 'error');
+  }
+
+  private toFormData(value: EntityFormValue, entityId: number): FormData {
+    const formData = new FormData();
+
+    formData.append('id_entity', String(entityId));
+    formData.append('name', value.name.trim());
+    formData.append('description', value.description.trim());
+    formData.append('type', value.type);
+    formData.append('nit', value.nit.trim());
+    formData.append('phone', value.phone.trim());
+    formData.append('email', value.email.trim().toLowerCase());
+    formData.append('address', value.address.trim());
+    formData.append('logo_url', value.logo_url.trim());
+    formData.append('status', value.status);
+
+    if (value.file) {
+      formData.append('file', value.file);
+    }
+
+    return formData;
+  }
+
+  private normalizeText(value: string): string {
+    return value.trim().toLowerCase();
+  }
+}
