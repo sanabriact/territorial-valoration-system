@@ -4,6 +4,7 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { AppSideLoginComponent } from './pages/authentication/side-login/side-login.component';
 import { LayoutComponent } from './layouts/full/layout.component';
 import { HomeComponent } from './pages/home/home.component';
+import { EntitiesListComponent } from './pages/entities/list/list.component';
 
 export const routes: Routes = [
   {
@@ -15,18 +16,16 @@ export const routes: Routes = [
     component: LayoutComponent,
     canActivate: [authGuard],
     children: [
-
-      {
-        path: '',
-        redirectTo: 'home',
-        pathMatch: 'full'
-      },
-
       {
         path: 'home',
-        component: HomeComponent
+        component: HomeComponent,
+        data: { title: 'Inicio', subtitle: 'Bienvenido al sistema' }
+      },
+      {
+        path: 'administration/entities',
+        component: EntitiesListComponent,
+        data: { title: 'Gestión de entidades', subtitle: 'Administra las entidades que participan en el sistema' }
       }
-
     ]
   },
   {

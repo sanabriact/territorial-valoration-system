@@ -1,0 +1,424 @@
+// ═════════════════════════════════════════════════════════════════
+// VARIABLES DE DISEÑO (Basadas fielmente en el Mockup)
+// ═════════════════════════════════════════════════════════════════
+$primary-color: #2563eb;       // Azul vivo de botones principales y páginas activas
+$primary-hover: #1d4ed8;
+$text-main: #0f172a;           // Slate 900 para títulos, textos y datos primarios
+$text-muted: #64748b;          // Slate 500 para subtítulos y encabezados de tabla
+$border-color: #e2e8f0;        // Slate 200 para líneas divisorias limpias
+$bg-card: #ffffff;
+$bg-hover: #f8fafc;            // Slate 50 para el hover sutil de las filas
+
+// Estados de Badges (Pills)
+$success-bg: #e6f4ea;          // Verde suave de fondo para 'Activa'
+$success-text: #137333;        // Verde oscuro para el texto y punto
+$inactive-bg: #f1f5f9;         // Gris suave para 'Inactiva'
+$inactive-text: #5f6368;
+
+// Colores de acciones
+$edit-color: #2563eb;          // Azul para el lápiz de edición
+$delete-color: #dc2626;        // Rojo para la papelera de eliminación
+
+// ═════════════════════════════════════════════════════════════════
+// CONTENEDOR PRINCIPAL Y TARJETA
+// ═════════════════════════════════════════════════════════════════
+.gt-wrapper {
+  width: 100%;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.gt-card {
+  background-color: $bg-card;
+  border-radius: 12px;
+  border: 1px solid $border-color;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+
+  // Barra superior (Título + Botón Nueva Entidad)
+  &__topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    &-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    &-title {
+      font-size: 1.125rem; // 18px
+      font-weight: 600;
+      color: $text-main;
+    }
+
+    &-sub {
+      font-size: 0.875rem; // 14px
+      color: $text-muted;
+    }
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// COMPONENTE DE BOTÓN GLOBAL (.gt-btn)
+// ═════════════════════════════════════════════════════════════════
+.gt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 40px;
+
+  &__icon {
+    width: 18px;  // Ajuste crucial para evitar los SVGs gigantes
+    height: 18px;
+  }
+
+  &--primary {
+    background-color: $primary-color;
+    color: #ffffff;
+
+    &:hover {
+      background-color: $primary-hover;
+    }
+  }
+
+  &--outline {
+    background-color: #ffffff;
+    border-color: $border-color;
+    color: $text-main;
+
+    &:hover {
+      background-color: $bg-hover;
+      border-color: #cbd5e1;
+    }
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// TOOLBAR (Búsqueda y Filtros)
+// ═════════════════════════════════════════════════════════════════
+.gt-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.gt-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 360px;
+  width: 100%;
+
+  &__icon {
+    position: absolute;
+    left: 14px;
+    color: $text-muted;
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 10px 14px 10px 42px;
+    border: 1px solid $border-color;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: $text-main;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 1px $primary-color;
+    }
+  }
+
+  &__clear {
+    position: absolute;
+    right: 14px;
+    background: none;
+    border: none;
+    color: $text-muted;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover {
+      color: $text-main;
+    }
+  }
+}
+
+// Contenedor del filtro desplegable
+.gt-filter-wrapper {
+  position: relative;
+}
+
+// ═════════════════════════════════════════════════════════════════
+// TABLA ESTRUCTURAL (.gt-table)
+// ═════════════════════════════════════════════════════════════════
+.gt-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 8px;
+}
+
+.gt-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+
+  // Encabezado
+  &__head {
+    border-bottom: 1px solid $border-color;
+  }
+
+  &__th {
+    padding: 14px 16px;
+    color: $text-muted;
+    font-weight: 600;
+    font-size: 0.8125rem; // 13px sutiles
+    letter-spacing: 0.025em;
+    white-space: nowrap;
+
+    &--actions {
+      text-align: center;
+      width: 100px;
+    }
+  }
+
+  // Cuerpo
+  &__body {
+    .gt-table__row {
+      border-bottom: 1px solid #f1f5f9; // Líneas divisorias de filas muy suaves
+      transition: background-color 0.15s ease;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: $bg-hover;
+      }
+    }
+  }
+
+  &__td {
+    padding: 16px;
+    color: $text-main;
+    vertical-align: middle;
+    line-height: 1.5;
+
+    &--actions {
+      text-align: center;
+    }
+  }
+
+  // Logotipos de las entidades
+  &__img {
+    height: 44px;
+    width: 44px;
+    object-fit: contain;
+    display: block;
+    border-radius: 4px;
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// COMPONENTE BADGE DE ESTADO (.gt-badge)
+// ═════════════════════════════════════════════════════════════════
+.gt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px; // Pill shape perfecta
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  &--active {
+    background-color: $success-bg;
+    color: $success-text;
+
+    .gt-badge__dot {
+      background-color: $success-text;
+    }
+  }
+
+  &--inactive {
+    background-color: $inactive-bg;
+    color: $inactive-text;
+
+    .gt-badge__dot {
+      background-color: $inactive-text;
+    }
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// ACCIONES DE FILA (Editar / Eliminar)
+// ═════════════════════════════════════════════════════════════════
+.gt-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.gt-action-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &--edit {
+    color: $edit-color;
+    &:hover {
+      background-color: rgba($edit-color, 0.08);
+    }
+  }
+
+  &--delete {
+    color: $delete-color;
+    &:hover {
+      background-color: rgba($delete-color, 0.08);
+    }
+  }
+  
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: none !important;
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════
+// PAGINACIÓN
+// ═════════════════════════════════════════════════════════════════
+.gt-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid $border-color;
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: $text-muted;
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+// Botones de paginación individuales
+.gt-page-btn {
+  background-color: #ffffff;
+  border: 1px solid $border-color;
+  color: $text-main;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  min-width: 34px;
+
+  &--number {
+    padding: 0;
+  }
+
+  &--active {
+    background-color: $primary-color !important;
+    border-color: $primary-color !important;
+    color: #ffffff !important;
+    font-weight: 600;
+  }
+
+  &:disabled {
+    color: #cbd5e1;
+    border-color: #f1f5f9;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    background-color: $bg-hover;
+    border-color: #cbd5e1;
+  }
+}
+
+// Spinner de Carga
+.gt-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  gap: 12px;
+
+  &__ring {
+    width: 32px;
+    height: 32px;
+    border: 3px solid $border-color;
+    border-top-color: $primary-color;
+    border-radius: 50%;
+    animation: gt-spin 0.8s linear infinite;
+  }
+
+  &__text {
+    font-size: 0.875rem;
+    color: $text-muted;
+  }
+}
+
+@keyframes gt-spin {
+  to { transform: rotate(360deg); }
+}
