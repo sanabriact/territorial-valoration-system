@@ -53,8 +53,8 @@ export class EntityService {
    * Crear entidad
    * POST /entities
    */
-  create(entity: Omit<Entity, 'id_entity'>): Observable<Entity> {
-    return this.http.post<Entity>(this.apiUrl, entity);
+  create(entity: Entity): Observable<Entity> {
+    return this.http.post<Entity>(this.apiUrl, this.toFormData(entity));
   }
 
   /**
@@ -62,7 +62,7 @@ export class EntityService {
    * PUT /entities/:id
    */
   update(id: number, entity: Entity): Observable<Entity> {
-    return this.http.put<Entity>(`${this.apiUrl}/${id}`, entity);
+    return this.http.put<Entity>(`${this.apiUrl}/${id}`, this.toFormData(entity));
   }
 
   /**
@@ -71,5 +71,23 @@ export class EntityService {
    */
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  private toFormData(entity: Entity): FormData {
+    const formData = new FormData();
+
+    formData.append('name', entity.name.trim());
+    formData.append('nit', entity.nit.trim());
+    formData.append('phone', entity.phone.trim());
+    formData.append('email', entity.email.trim().toLowerCase());
+    formData.append('address', (entity.address ?? entity.adress ?? '').trim());
+    formData.append('logo_url', entity.logo_url.trim());
+    formData.append('status', String(entity.status));
+
+    if (entity.file) {
+      formData.append('file', entity.file);
+    }
+
+    return formData;
   }
 }

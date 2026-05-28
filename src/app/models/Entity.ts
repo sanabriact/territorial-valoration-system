@@ -1,5 +1,4 @@
 export type EntityStatus = 'active' | 'inactive';
-export type EntityType = 'public' | 'private';
 
 export interface Entity {
   id_entity: number;
@@ -11,19 +10,7 @@ export interface Entity {
   logo_url: string;
   adress?: string;
   address?: string;
-  description?: string;
-  type?: EntityType | string;
+  file?: File | null;
 }
 
-export interface EntityFormValue {
-  name: string;
-  description: string;
-  type: EntityType;
-  nit: string;
-  phone: string;
-  email: string;
-  address: string;
-  logo_url: string;
-  status: EntityStatus;
-  file: File | null;
-}
+

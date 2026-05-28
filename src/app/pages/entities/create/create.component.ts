@@ -2,15 +2,17 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize, map, switchMap, take } from 'rxjs';
 import Swal from 'sweetalert2';
-import { EntitiesFormComponent } from '../../../components/entities-form/entities-form.component';
-import { Entity, EntityFormValue } from '../../../models/Entity';
+import { EntitiesFormComponent } from '../components/entities-form/entities-form.component';
+import { Entity } from '../../../models/Entity';
 import { EntityService } from '../../../services/entities/entities.service';
+import { EntityFormValue } from '../../../models/interfaces/form/EntityFormValue';
 
 @Component({
   selector: 'app-entity-create',
   standalone: true,
   imports: [EntitiesFormComponent],
-  templateUrl: `./create.html`,
+  templateUrl: `./create.component.html`,
+  styleUrl:'./create.component.scss'
 })
 export class EntityCreateComponent {
   private readonly entityService = inject(EntityService);
@@ -30,7 +32,7 @@ export class EntityCreateComponent {
             throw new Error('ENTITY_NAME_EXISTS');
           }
 
-          return this.entityService.create(this.toFormData(formValue) as unknown as Omit<Entity, 'id_entity'>);
+          return this.entityService.create(this.toEntity(formValue));
         }),
         finalize(() => this.saving.set(false)),
       )
@@ -61,24 +63,18 @@ export class EntityCreateComponent {
     void Swal.fire('Error', 'No se pudo guardar la entidad.', 'error');
   }
 
-  private toFormData(value: EntityFormValue): FormData {
-    const formData = new FormData();
-
-    formData.append('name', value.name.trim());
-    formData.append('description', value.description.trim());
-    formData.append('type', value.type);
-    formData.append('nit', value.nit.trim());
-    formData.append('phone', value.phone.trim());
-    formData.append('email', value.email.trim().toLowerCase());
-    formData.append('address', value.address.trim());
-    formData.append('logo_url', value.logo_url.trim());
-    formData.append('status', value.status);
-
-    if (value.file) {
-      formData.append('file', value.file);
-    }
-
-    return formData;
+  private toEntity(value: EntityFormValue): Entity {
+    return {
+      id_entity: 0,
+      name: value.name,
+      nit: value.nit,
+      phone: value.phone,
+      email: value.email,
+      address: value.address,
+      logo_url: value.logo_url,
+      status: value.status,
+      file: value.file,
+    };
   }
 
   private normalizeText(value: string): string {

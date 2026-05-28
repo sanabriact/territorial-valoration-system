@@ -152,7 +152,7 @@ export class OfficialsListComponent implements OnInit {
     }).then((result) => {
       if (!result.isConfirmed) return;
 
-      this.officialService.update(official.id_official, { status: 'inactive' }).subscribe({
+      this.officialService.update(official.id_official, { ...official, status: 'inactive' }).subscribe({
         next: () => {
           this.loadOfficials();
           void Swal.fire('Listo', 'El funcionario fue desactivado.', 'success');

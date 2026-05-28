@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Entity } from '../../models/Entity';
-import { Official, OfficialFormValue, OfficialStatus } from '../../models/Official';
+import { Entity } from '../../../../models/Entity';
+import { Official, OfficialFormValue, OfficialStatus } from '../../../../models/Official';
 
 export type OfficialFormMode = 'create' | 'edit';
 

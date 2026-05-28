@@ -2,18 +2,19 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize, switchMap, take } from 'rxjs';
 import Swal from 'sweetalert2';
-import { OfficialFormComponent } from '../../../components/official-form/official-form.component';
+import { OfficialFormComponent } from '../components/official-form/official-form.component';
 import { Entity } from '../../../models/Entity';
-import { CreateOfficialRequest, OfficialFormValue } from '../../../models/Official';
+import { Official} from '../../../models/Official';
 import { EntityService } from '../../../services/entities/entities.service';
 import { OfficialService } from '../../../services/officials/official.service';
+import { OfficialFormValue } from '../../../models/interfaces/form/OfficialFormValue';
 
 @Component({
     selector: 'app-official-create',
     standalone: true,
     imports: [OfficialFormComponent],
-    templateUrl:'./create.component.html',
-    styleUrl:'./create.component.scss'
+    templateUrl: './create.component.html',
+    styleUrl: './create.component.scss'
 })
 export class OfficialCreateComponent implements OnInit {
     private readonly entityService = inject(EntityService);
@@ -39,7 +40,7 @@ export class OfficialCreateComponent implements OnInit {
                         throw new Error('EMAIL_EXISTS');
                     }
 
-                    return this.officialService.create(this.toCreateRequest(formValue));
+                    return this.officialService.create(this.toOfficial(formValue));
                 }),
                 finalize(() => this.saving.set(false)),
             )
@@ -86,8 +87,9 @@ export class OfficialCreateComponent implements OnInit {
         void Swal.fire('Error', 'No se pudo guardar el funcionario.', 'error');
     }
 
-    private toCreateRequest(value: OfficialFormValue): CreateOfficialRequest {
+    private toOfficial(value: OfficialFormValue): Official {
         return {
+            id_official: 0,
             id_entity: Number(value.id_entity),
             name: value.name.trim(),
             email: value.email.trim().toLowerCase(),

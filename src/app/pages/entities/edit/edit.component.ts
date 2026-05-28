@@ -2,9 +2,10 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin, map, switchMap, take } from 'rxjs';
 import Swal from 'sweetalert2';
-import { EntitiesFormComponent } from '../../../components/entities-form/entities-form.component';
-import { Entity, EntityFormValue } from '../../../models/Entity';
+import { EntitiesFormComponent } from '../components/entities-form/entities-form.component';
+import { Entity} from '../../../models/Entity';
 import { EntityService } from '../../../services/entities/entities.service';
+import { EntityFormValue } from '../../../models/interfaces/form/EntityFormValue';
 
 @Component({
   selector: 'app-entity-edit',
@@ -57,7 +58,7 @@ export class EntityEditComponent implements OnInit {
 
           return this.entityService.update(
             currentEntity.id_entity,
-            this.toFormData(formValue, currentEntity.id_entity) as unknown as Entity,
+            this.toEntity(formValue, currentEntity.id_entity),
           );
         }),
         finalize(() => this.saving.set(false)),
@@ -117,25 +118,18 @@ export class EntityEditComponent implements OnInit {
     void Swal.fire('Error', 'No se pudo guardar la entidad.', 'error');
   }
 
-  private toFormData(value: EntityFormValue, entityId: number): FormData {
-    const formData = new FormData();
-
-    formData.append('id_entity', String(entityId));
-    formData.append('name', value.name.trim());
-    formData.append('description', value.description.trim());
-    formData.append('type', value.type);
-    formData.append('nit', value.nit.trim());
-    formData.append('phone', value.phone.trim());
-    formData.append('email', value.email.trim().toLowerCase());
-    formData.append('address', value.address.trim());
-    formData.append('logo_url', value.logo_url.trim());
-    formData.append('status', value.status);
-
-    if (value.file) {
-      formData.append('file', value.file);
-    }
-
-    return formData;
+  private toEntity(value: EntityFormValue, entityId: number): Entity {
+    return {
+      id_entity: entityId,
+      name: value.name,
+      nit: value.nit,
+      phone: value.phone,
+      email: value.email,
+      address: value.address,
+      logo_url: value.logo_url,
+      status: value.status,
+      file: value.file,
+    };
   }
 
   private normalizeText(value: string): string {

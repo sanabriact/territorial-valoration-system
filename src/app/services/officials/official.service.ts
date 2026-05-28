@@ -3,11 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environments';
-import {
-  CreateOfficialRequest,
-  Official,
-  UpdateOfficialRequest,
-} from '../../models/Official';
+import { Official } from '../../models/Official';
 
 export interface OfficialPagedResponse {
   data: Official[];
@@ -66,16 +62,16 @@ export class OfficialService {
    * Crear funcionario
    * POST /officials
    */
-  create(official: CreateOfficialRequest): Observable<Official> {
-    return this.http.post<Official>(this.apiUrl, official);
+  create(official: Official): Observable<Official> {
+    return this.http.post<Official>(this.apiUrl, this.toRequestBody(official));
   }
 
   /**
    * Actualizar funcionario
    * PUT /officials/:id
    */
-  update(id: number, official: UpdateOfficialRequest): Observable<Official> {
-    return this.http.put<Official>(`${this.apiUrl}/${id}`, official);
+  update(id: number, official: Official): Observable<Official> {
+    return this.http.put<Official>(`${this.apiUrl}/${id}`, this.toRequestBody(official));
   }
 
   /**
@@ -101,5 +97,20 @@ export class OfficialService {
         ),
       ),
     );
+  }
+
+  private toRequestBody(official: Official): Record<string, unknown> {
+    return {
+      id_entity: Number(official.id_entity),
+      name: official.name.trim(),
+      email: official.email.trim().toLowerCase(),
+      phone: official.phone.trim(),
+      role: official.role,
+      status: official.status,
+      last_latitude: official.last_latitude ?? null,
+      last_longitude: official.last_longitude ?? null,
+      last_gps_update: official.last_gps_update ?? null,
+      gps_active: official.gps_active ?? false,
+    };
   }
 }

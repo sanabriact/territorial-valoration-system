@@ -33,20 +33,6 @@
         </label>
 
         <label class="entity-field">
-          <span>Tipo de entidad</span>
-          <select formControlName="type">
-            <option *ngFor="let type of entityTypes" [value]="type.value">{{ type.label }}</option>
-          </select>
-          <small *ngIf="hasFieldError('type')">Selecciona un tipo.</small>
-        </label>
-
-        <label class="entity-field entity-field--full">
-          <span>Descripcion</span>
-          <textarea rows="4" formControlName="description" placeholder="Descripcion institucional"></textarea>
-          <small *ngIf="hasFieldError('description')">Ingresa al menos 5 caracteres.</small>
-        </label>
-
-        <label class="entity-field">
           <span>NIT</span>
           <input type="text" formControlName="nit" placeholder="900123456-7" />
           <small *ngIf="hasFieldError('nit')">Ingresa un NIT valido.</small>

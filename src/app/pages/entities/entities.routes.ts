@@ -13,7 +13,7 @@ export const entitiesRoutes: Routes = [
     {
         path: 'administration/entities/create',
         loadComponent: () =>
-            import('./create/create').then((module) => module.EntityCreateComponent),
+            import('./create/create.component').then((module) => module.EntityCreateComponent),
         data: {
             title: 'Crear entidad',
             subtitle: 'Registra una nueva entidad en el sistema',

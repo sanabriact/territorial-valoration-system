@@ -2,11 +2,12 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin, switchMap, take } from 'rxjs';
 import Swal from 'sweetalert2';
-import { OfficialFormComponent } from '../../../components/official-form/official-form.component';
+import { OfficialFormComponent } from '../components/official-form/official-form.component';
 import { Entity } from '../../../models/Entity';
-import { Official, OfficialFormValue, UpdateOfficialRequest } from '../../../models/Official';
+import { Official} from '../../../models/Official';
 import { EntityService } from '../../../services/entities/entities.service';
 import { OfficialService } from '../../../services/officials/official.service';
+import { OfficialFormValue } from '../../../models/interfaces/form/OfficialFormValue';
 
 @Component({
   selector: 'app-official-edit',
@@ -50,7 +51,7 @@ export class OfficialEditComponent implements OnInit {
             throw new Error('EMAIL_EXISTS');
           }
 
-          return this.officialService.update(currentOfficial.id_official, this.toUpdateRequest(formValue));
+          return this.officialService.update(currentOfficial.id_official, this.toOfficial(formValue, currentOfficial.id_official));
         }),
         finalize(() => this.saving.set(false)),
       )
@@ -108,8 +109,9 @@ export class OfficialEditComponent implements OnInit {
     void Swal.fire('Error', 'No se pudo guardar el funcionario.', 'error');
   }
 
-  private toUpdateRequest(value: OfficialFormValue): UpdateOfficialRequest {
+  private toOfficial(value: OfficialFormValue, officialId: number): Official {
     return {
+      id_official: officialId,
       id_entity: Number(value.id_entity),
       name: value.name.trim(),
       email: value.email.trim().toLowerCase(),

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Entity, EntityFormValue, EntityStatus, EntityType } from '../../models/Entity';
+import { Entity, EntityFormValue, EntityStatus } from '../../../../models/Entity';
 
 export type EntityFormMode = 'create' | 'edit';
 
@@ -23,11 +23,6 @@ export class EntitiesFormComponent {
   readonly formSubmit = output<EntityFormValue>();
   readonly formCancel = output<void>();
 
-  readonly entityTypes: Array<{ value: EntityType; label: string }> = [
-    { value: 'public', label: 'Publica' },
-    { value: 'private', label: 'Privada' },
-  ];
-
   readonly logoPreview = signal('imagen_por_defecto.png');
 
   readonly title = computed(() =>
@@ -42,8 +37,6 @@ export class EntitiesFormComponent {
 
   readonly entityForm = this.formBuilder.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
-    description: ['', [Validators.required, Validators.minLength(5)]],
-    type: ['public' as EntityType, [Validators.required]],
     nit: ['', [Validators.required, Validators.pattern(/^[0-9.-]{5,20}$/)]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9+()\s-]{7,20}$/)]],
     email: ['', [Validators.required, Validators.email]],
@@ -104,8 +97,6 @@ export class EntitiesFormComponent {
   private toFormValue(entity: Entity): Partial<EntityFormValue> {
     return {
       name: entity.name,
-      description: entity.description ?? '',
-      type: entity.type === 'private' ? 'private' : 'public',
       nit: entity.nit,
       phone: entity.phone,
       email: entity.email,
