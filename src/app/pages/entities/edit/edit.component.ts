@@ -2,7 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin, map, switchMap, take } from 'rxjs';
 import Swal from 'sweetalert2';
-import { EntitiesFormComponent } from '../components/entities-form/entities-form.component';
+import { EntitiesFormComponent } from '../entities-form/entities-form.component';
 import { Entity} from '../../../models/Entity';
 import { EntityService } from '../../../services/entities/entities.service';
 import { EntityFormValue } from '../../../models/interfaces/form/EntityFormValue';
@@ -11,16 +11,7 @@ import { EntityFormValue } from '../../../models/interfaces/form/EntityFormValue
   selector: 'app-entity-edit',
   standalone: true,
   imports: [EntitiesFormComponent],
-  template: `
-    <app-entities-form
-      mode="edit"
-      [entity]="entity()"
-      [loading]="loading()"
-      [saving]="saving()"
-      (formSubmit)="save($event)"
-      (formCancel)="cancel()"
-    />
-  `,
+  templateUrl: './edit.component.html',
 })
 export class EntityEditComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

@@ -1,0 +1,8 @@
+<app-entities-form
+      mode="edit"
+      [entity]="entity()"
+      [loading]="loading()"
+      [saving]="saving()"
+      (formSubmit)="save($event)"
+      (formCancel)="cancel()"
+/>

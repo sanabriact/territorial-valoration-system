@@ -26,7 +26,7 @@ export class OfficialFormComponent {
   readonly formSubmit = output<OfficialFormValue>();
   readonly formCancel = output<void>();
 
-  readonly roles = ['ADMIN', 'FUNCIONARIO'];
+  readonly roles = ['FUNCIONARIO'];
 
   readonly title = computed(() =>
     this.mode() === 'edit' ? 'Editar funcionario' : 'Agregar funcionario',

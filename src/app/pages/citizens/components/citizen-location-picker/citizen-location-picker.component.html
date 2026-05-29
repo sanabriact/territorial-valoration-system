@@ -1,0 +1,46 @@
+<section class="location-picker" [class.location-picker--readonly]="readOnly()">
+  <div class="location-picker__search" *ngIf="!readOnly()">
+    <span class="location-picker__search-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    </span>
+    <input
+      type="text"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="onSearchInput($event)"
+      (keydown.enter)="searchAddress()"
+      placeholder="Buscar direccion en el mapa..."
+    />
+    <button type="button" (click)="searchAddress()" [disabled]="searching()">
+      {{ searching() ? 'Buscando...' : 'Buscar' }}
+    </button>
+  </div>
+
+  <div class="location-picker__results" *ngIf="searchResults().length > 0 && !readOnly()">
+    <button type="button" *ngFor="let result of searchResults()" (click)="selectSearchResult(result)">
+      {{ result.label }}
+    </button>
+  </div>
+
+  <div class="location-picker__map" #mapTarget></div>
+
+  <div class="location-picker__status" *ngIf="selectedLocation()">
+    <div>
+      <span>{{ readOnly() ? 'Ubicacion registrada' : 'Ubicacion seleccionada' }}</span>
+      <strong>{{ selectedLocation()!.address }}</strong>
+      <small>
+        Lat {{ selectedLocation()!.latitude | number: '1.6-6' }} /
+        Lng {{ selectedLocation()!.longitude | number: '1.6-6' }}
+      </small>
+    </div>
+
+    <button type="button" *ngIf="!readOnly()" (click)="clearLocation()">
+      Limpiar ubicacion
+    </button>
+  </div>
+
+  <p class="location-picker__message" *ngIf="resolvingAddress()">Resolviendo direccion...</p>
+  <p class="location-picker__error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+</section>
