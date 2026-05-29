@@ -1,0 +1,92 @@
+<section class="category-form-page">
+  <form class="category-form" [formGroup]="categoryForm" (ngSubmit)="save()">
+    <header class="category-form__header">
+      <div>
+        <h1>{{ title() }}</h1>
+        <p>{{ subtitle() }}</p>
+      </div>
+      <button type="button" class="category-form__close" (click)="cancel()" aria-label="Cancelar">
+        <iconify-icon icon="solar:close-circle-linear"></iconify-icon>
+      </button>
+    </header>
+
+    <div class="category-form__body" *ngIf="!loading(); else loadingState">
+      <label class="category-field category-field--full">
+        <span>Nombre de la categoria <strong>*</strong></span>
+        <input type="text" formControlName="name" placeholder="Ej. Medio Ambiente" />
+        <small *ngIf="hasFieldError('name')">Ingresa al menos 3 caracteres.</small>
+        <em>Este nombre sera visible para los funcionarios y ciudadanos.</em>
+      </label>
+
+      <div class="category-image-section">
+        <label class="category-upload">
+          <span>Imagen representativa</span>
+          <div class="category-upload__dropzone">
+            <iconify-icon icon="solar:cloud-upload-linear"></iconify-icon>
+            <strong>Arrastra y suelta una imagen aqui</strong>
+            <small>o haz clic para seleccionar</small>
+            <em>Formatos: JPG, PNG. Max. 2MB</em>
+          </div>
+          <input type="file" accept="image/*" (change)="onImageSelected($event)" />
+        </label>
+
+        <div class="category-preview">
+          <span>Vista previa</span>
+          <div>
+            <img [src]="imagePreview()" alt="Vista previa de categoria" (error)="replaceBrokenImage($event)" />
+          </div>
+        </div>
+      </div>
+
+      <label class="category-field category-field--full">
+        <span>Categoria padre <em>(opcional)</em></span>
+        <small>Si seleccionas una categoria padre, esta sera creada como subcategoria.</small>
+        <select formControlName="id_parent_category">
+          <option [ngValue]="null">Selecciona una categoria padre</option>
+          <option *ngFor="let category of parentCategories()" [ngValue]="category.id_category">
+            {{ category.name }}
+          </option>
+        </select>
+      </label>
+
+      <div class="category-form__notice">
+        <iconify-icon icon="solar:info-circle-bold"></iconify-icon>
+        <span>Si no seleccionas una categoria padre, se creara como categoria principal.</span>
+      </div>
+
+      <label class="category-field category-field--full">
+        <span>Estado <strong>*</strong></span>
+        <select formControlName="status">
+          <option value="active">Activa</option>
+          <option value="inactive">Inactiva</option>
+        </select>
+        <em>Las categorias inactivas no estaran disponibles para clasificar anotaciones.</em>
+      </label>
+
+      <label class="category-field category-field--full">
+        <span>URL de imagen</span>
+        <input type="text" formControlName="image_url" placeholder="/logos/categoria.png" />
+      </label>
+
+      <label class="category-field category-field--full">
+        <span>Descripcion <strong>*</strong></span>
+        <textarea rows="4" formControlName="description" placeholder="Describe el significado de la categoria"></textarea>
+        <small *ngIf="hasFieldError('description')">Ingresa al menos 5 caracteres.</small>
+      </label>
+    </div>
+
+    <ng-template #loadingState>
+      <div class="category-form__loading">Cargando informacion...</div>
+    </ng-template>
+
+    <footer class="category-form__footer">
+      <button type="button" class="category-button category-button--secondary" (click)="cancel()" [disabled]="saving()">
+        Cancelar
+      </button>
+      <button type="submit" class="category-button category-button--primary" [disabled]="saving() || loading()">
+        <iconify-icon icon="solar:diskette-linear"></iconify-icon>
+        {{ saving() ? 'Guardando...' : 'Guardar categoria' }}
+      </button>
+    </footer>
+  </form>
+</section>

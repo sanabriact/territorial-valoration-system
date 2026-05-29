@@ -1,0 +1,9 @@
+<app-category-form
+  mode="edit"
+  [category]="category()"
+  [parentCategories]="parentCandidates()"
+  [loading]="loading()"
+  [saving]="saving()"
+  (formSubmit)="save($event)"
+  (formCancel)="cancel()"
+/>

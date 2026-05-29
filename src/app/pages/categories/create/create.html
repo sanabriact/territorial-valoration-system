@@ -1,0 +1,9 @@
+<app-category-form
+  mode="create"
+  [initialParentCategoryId]="parentCategoryId()"
+  [parentCategories]="categories()"
+  [loading]="loading()"
+  [saving]="saving()"
+  (formSubmit)="save($event)"
+  (formCancel)="cancel()"
+/>

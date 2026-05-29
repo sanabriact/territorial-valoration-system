@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environments';
 import { Category } from '../../models/Category';
@@ -15,16 +15,16 @@ export class CategoryService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Obtener todas las categorias.
-   * GET /citizens
+   * Obtener todas las categorias
+   * GET /categories
    */
   getAll(): Observable<Category[]> {
     return this.http.get<Category[]>(this.apiUrl);
   }
 
   /**
-   * Obtener categorias paginados
-   * GET /citizens?page=&pageSize=
+   * Obtener categorias paginadas
+   * GET /categories?page=&pageSize=
    */
   getPaged(page: number, pageSize: number): Observable<CategoryPagedResponse> {
     const params = new HttpParams()
@@ -36,26 +36,35 @@ export class CategoryService {
 
   /**
    * Obtener categoria por ID
-   * GET /Categories/:id
+   * GET /categories/:id
    */
   getById(id: number): Observable<Category> {
     return this.http.get<Category>(`${this.apiUrl}/${id}`);
   }
 
   /**
-   * Crear categoria
-   * POST /Categories
+   * Buscar categorias por filtro
+   * GET /categories/search?q=
    */
-  create(category: Category): Observable<Category> {
-    return this.http.post<Category>(this.apiUrl, this.toRequestBody(category));
+  search(query: string): Observable<Category[]> {
+    const params = new HttpParams().set('q', query);
+    return this.http.get<Category[]>(`${this.apiUrl}/search`, { params });
   }
 
   /**
-   * Actualizar categoria completo
+   * Crear categoria
+   * POST /categories
+   */
+  create(category: Category): Observable<Category> {
+    return this.http.post<Category>(this.apiUrl, this.toFormData(category));
+  }
+
+  /**
+   * Actualizar categoria
    * PUT /categories/:id
    */
   update(id: number, category: Category): Observable<Category> {
-    return this.http.put<Category>(`${this.apiUrl}/${id}`, this.toRequestBody(category));
+    return this.http.put<Category>(`${this.apiUrl}/${id}`, this.toFormData(category));
   }
 
   /**
@@ -66,30 +75,22 @@ export class CategoryService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  /**
-   * Validar nombre registrado
-   */
-  existsByName(name: string, excludedCategoryName?: string): Observable<boolean> {
-    const normalizedName = name.trim().toLowerCase();
+  private toFormData(category: Category): FormData {
+    const formData = new FormData();
 
-    return this.getAll().pipe(
-      map((categories) =>
-        categories.some(
-          (category) =>
-            category.name.trim().toLowerCase() === normalizedName &&
-            category.name !== excludedCategoryName,
-        ),
-      ),
-    );
-  }
+    if (category.id_parent_category) {
+      formData.append('id_parent_category', String(category.id_parent_category));
+    }
 
-  private toRequestBody(category: Category): Record<string, unknown> {
-    return {
-      description: category.description,
-      id_category: category.id_category,
-      id_parent_category: category.id_parent_category,  
-      name: category.name.trim(),
-      status: category.status,
-    };
+    formData.append('name', category.name.trim());
+    formData.append('description', category.description.trim());
+    formData.append('image_url', category.image_url.trim());
+    formData.append('status', String(category.status));
+
+    if (category.file) {
+      formData.append('file', category.file);
+    }
+
+    return formData;
   }
 }

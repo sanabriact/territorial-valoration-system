@@ -1,8 +1,24 @@
+export type CategoryStatus = 'active' | 'inactive';
+
 export interface Category {
-    description: string;
-    id_category:  number;
-    id_parent_category: number | null;
-    image_url: string;
-    name: string;
-    status: "active" | "inactive"
+  id_category: number;
+  id_parent_category: number | null;
+  name: string;
+  description: string;
+  image_url: string;
+  status: CategoryStatus | string;
+  file?: File | null;
+}
+
+export interface CategoryFormValue {
+  id_parent_category: number | null;
+  name: string;
+  description: string;
+  image_url: string;
+  status: CategoryStatus;
+  file: File | null;
+}
+
+export interface CategoryTreeNode extends Category {
+  children: Category[];
 }
