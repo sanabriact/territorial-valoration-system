@@ -3,6 +3,7 @@ import { entitiesRoutes } from './entities/entities.routes';
 import { officialRoutes } from './officials/official.routes';
 import { citizensRoutes } from './citizens/citizens.routes';
 import { categoriesRoutes } from './categories/categories.routes';
+import { neighborhoodsRoutes } from './neighborhoods/neighborhoods.routes';
 
 export const pagesRoutes: Routes = [
     {
@@ -14,5 +15,6 @@ export const pagesRoutes: Routes = [
     ...entitiesRoutes,
     ...officialRoutes,
     ...citizensRoutes,
-    ...categoriesRoutes
+    ...categoriesRoutes,
+    ...neighborhoodsRoutes
 ];

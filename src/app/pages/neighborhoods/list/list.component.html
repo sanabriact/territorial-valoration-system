@@ -1,0 +1,15 @@
+<app-generic-table
+  cardTitle="Barrios registrados"
+  cardSubtitle="Consulta, edita o elimina barrios asociados a comunas."
+  searchPlaceholder="Buscar por barrio o comuna..."
+  emptyMessage="No se encontraron barrios registrados."
+  [columns]="columns"
+  [data]="tableData()"
+  [pagination]="pagination()"
+  [actions]="actions"
+  [loading]="loading()"
+  [showFilters]="false"
+  (searchChanged)="onSearch($event)"
+  (actionClicked)="onActionClicked($event)"
+  (pageChanged)="onPageChange($event)"
+/>
