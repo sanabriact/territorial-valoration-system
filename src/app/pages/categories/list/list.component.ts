@@ -8,13 +8,15 @@ import Swal from 'sweetalert2';
 import { environment } from '../../../../environments/environments';
 import { Category, CategoryStatus, CategoryTreeNode } from '../../../models/Category';
 import { CategoryService } from '../../../services/categories/category.service';
+import { GenericTableComponent } from '../../../components/generic-table/generic-table.component';
+import { TableColumn, TreeConfig } from '../../../models/components/generic-table/generic-table-types';
 
 type CategoryStatusFilter = 'all' | CategoryStatus;
 
 @Component({
   selector: 'app-category-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GenericTableComponent],
   templateUrl: './list.component.html',
   styleUrl: './list.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -25,13 +27,32 @@ export class CategoryListComponent implements OnInit {
 
   readonly categories = signal<Category[]>([]);
   readonly loading = signal(false);
-  readonly searchQuery = signal('');
-  readonly statusFilter = signal<CategoryStatusFilter>('all');
-  readonly expandedIds = signal<Set<number>>(new Set<number>());
 
-  readonly categoryTree = computed(() => this.buildTree(this.filteredCategories()));
-  readonly totalVisibleRows = computed(() =>
-    this.categoryTree().reduce((total, node) => total + 1 + node.children.length, 0),
+  // ── Columnas de la tabla ──────────────────────────────────────────────────
+  readonly columns: TableColumn[] = [
+    { key: 'name', label: 'Categoría / Subcategoría', type: 'text' },
+    { key: 'status', label: 'Estado', type: 'badge',
+      badgeConfig: { activeValue: 'active', activeLabel: 'Activa', inactiveLabel: 'Inactiva' } },
+  ];
+
+  // ── Configuración del árbol ───────────────────────────────────────────────
+  readonly treeConfig: TreeConfig = {
+    idKey: 'id_category',
+    childrenKey: 'children',
+    nameKey: 'name',
+    rootBadgeLabel: 'Categoría',
+    childBadgeLabel: 'Subcategoría',
+    showTypeBadge: true,
+    typeBadgeColumnLabel: 'Tipo',
+    showParentColumn: true,
+    parentColumnLabel: 'Categoría padre',
+    initialExpandedIds: [],
+    addChildAction: { id: 'add-child', tooltip: 'Crear subcategoría' },
+  };
+
+  // ── Datos para la tabla (árbol aplanado con children) ─────────────────────
+  readonly tableData = computed<any[]>(() =>
+    this.buildTree(this.categories())
   );
 
   ngOnInit(): void {
@@ -44,35 +65,41 @@ export class CategoryListComponent implements OnInit {
       .getAll()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (categories) => {
-          this.categories.set(categories);
-          this.expandRootCategories(categories);
-        },
+        next: (categories) => this.categories.set(categories),
         error: () => void Swal.fire('Error', 'No se pudieron cargar las categorias.', 'error'),
       });
   }
 
-  onSearch(query: string): void {
-    this.searchQuery.set(query);
+  onActionClicked(event: { actionId: string; row: any }): void {
+    const { actionId, row } = event;
+
+    switch (actionId) {
+      case 'create':
+        void this.router.navigate(['/administration/categories/create']);
+        break;
+
+      case 'add-child':
+        void this.router.navigate(['/administration/categories/create'], {
+          queryParams: { parentId: row?.id_category },
+        });
+        break;
+
+      case 'edit':
+        void this.router.navigate(['/administration/categories/edit', row.id_category]);
+        break;
+
+      case 'delete':
+        this.confirmDelete(row);
+        break;
+    }
   }
 
-  onStatusFilterChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value as CategoryStatusFilter;
-    this.statusFilter.set(value);
-  }
+  private confirmDelete(category: Category): void {
+    const hasChildren = this.categories().some(
+      (c) => c.id_parent_category === category.id_category,
+    );
 
-  createCategory(parentCategory?: Category): void {
-    void this.router.navigate(['/administration/categories/create'], {
-      queryParams: parentCategory ? { parentId: parentCategory.id_category } : undefined,
-    });
-  }
-
-  editCategory(category: Category): void {
-    void this.router.navigate(['/administration/categories/edit', category.id_category]);
-  }
-
-  deleteCategory(category: Category): void {
-    if (this.hasChildren(category.id_category)) {
+    if (hasChildren) {
       void Swal.fire(
         'No se puede eliminar',
         'La categoria tiene subcategorias asociadas. Reasignalas antes de eliminarla.',
@@ -102,76 +129,9 @@ export class CategoryListComponent implements OnInit {
             error.status === 409
               ? 'La categoria tiene anotaciones asociadas. Reasignalas antes de eliminarla.'
               : 'No se pudo eliminar la categoria.';
-
           void Swal.fire('Operacion cancelada', message, 'error');
         },
       });
-    });
-  }
-
-  toggleExpanded(categoryId: number): void {
-    this.expandedIds.update((current) => {
-      const next = new Set(current);
-
-      if (next.has(categoryId)) {
-        next.delete(categoryId);
-      } else {
-        next.add(categoryId);
-      }
-
-      return next;
-    });
-  }
-
-  isExpanded(categoryId: number): boolean {
-    return this.expandedIds().has(categoryId);
-  }
-
-  replaceBrokenImage(event: Event): void {
-    const image = event.target as HTMLImageElement;
-    image.src = 'imagen_por_defecto.png';
-  }
-
-  getParentName(category: Category): string {
-    if (!category.id_parent_category) return '--';
-    return this.categories().find((item) => item.id_category === category.id_parent_category)?.name ?? '--';
-  }
-
-  getStatusLabel(status: string): string {
-    return this.toStatus(status) === 'active' ? 'Activa' : 'Inactiva';
-  }
-
-  resolveImageSrc(imageUrl: string | null | undefined): string {
-    if (!imageUrl) return 'imagen_por_defecto.png';
-
-    if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
-      return imageUrl;
-    }
-
-    if (imageUrl.startsWith('/api/')) {
-      return imageUrl;
-    }
-
-    if (imageUrl.startsWith('/')) {
-      return `${environment.apiUrl}/images${imageUrl}`;
-    }
-
-    return imageUrl;
-  }
-
-  private filteredCategories(): Category[] {
-    const query = this.searchQuery().trim().toLowerCase();
-    const status = this.statusFilter();
-
-    return this.categories().filter((category) => {
-      const matchesStatus = status === 'all' || this.toStatus(category.status) === status;
-      const matchesQuery =
-        !query ||
-        [category.name, category.description, this.getParentName(category)]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(query));
-
-      return matchesStatus && matchesQuery;
     });
   }
 
@@ -191,21 +151,5 @@ export class CategoryListComponent implements OnInit {
       ...category,
       children: byParent.get(category.id_category) ?? [],
     }));
-  }
-
-  private hasChildren(categoryId: number): boolean {
-    return this.categories().some((category) => category.id_parent_category === categoryId);
-  }
-
-  private expandRootCategories(categories: Category[]): void {
-    const rootIds = categories
-      .filter((category) => !category.id_parent_category)
-      .map((category) => category.id_category);
-
-    this.expandedIds.set(new Set(rootIds));
-  }
-
-  private toStatus(status: string): CategoryStatus {
-    return status === 'inactive' ? 'inactive' : 'active';
   }
 }

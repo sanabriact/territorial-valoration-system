@@ -449,3 +449,40 @@ $delete-color: #dc2626;        // Rojo para la papelera de eliminación
 @keyframes gt-spin {
   to { transform: rotate(360deg); }
 }
+
+// ── Tree toggle chevron ───────────────────────────────────────────────────
+.gt-tree-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  flex-shrink: 0;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s ease;
+    transform: rotate(0deg); // apunta derecha = colapsado
+  }
+
+  svg.gt-tree-toggle__icon--open {
+    transform: rotate(90deg); // apunta abajo = expandido
+  }
+}
+
+.gt-tree-spacer {
+  display: inline-block;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+// Indentación visual para hijos
+.gt-tree-cell--child {
+  padding-left: 32px;
+}
