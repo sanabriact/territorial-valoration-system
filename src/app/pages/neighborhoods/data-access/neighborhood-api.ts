@@ -12,13 +12,22 @@ import {
   NeighborhoodRequest,
 } from '../../../models/Neighborhood';
 
+type CollectionResponse<T> = T[] | { data?: T[]; items?: T[] };
+
 @Injectable()
 export class CommuneApi {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/communes`;
 
   getAll(): Observable<Commune[]> {
-    return this.http.get<Commune[]>(this.apiUrl);
+    return this.http
+      .get<CollectionResponse<Commune>>(this.apiUrl)
+      .pipe(map((response) => this.toCollection(response)));
+  }
+
+  private toCollection<T>(response: CollectionResponse<T>): T[] {
+    if (Array.isArray(response)) return response;
+    return response.data ?? response.items ?? [];
   }
 }
 
@@ -28,7 +37,9 @@ export class NeighborhoodApi {
   private readonly apiUrl = `${environment.apiUrl}/neighborhoods`;
 
   getAll(): Observable<Neighborhood[]> {
-    return this.http.get<Neighborhood[]>(this.apiUrl);
+    return this.http
+      .get<CollectionResponse<Neighborhood>>(this.apiUrl)
+      .pipe(map((response) => this.toCollection(response)));
   }
 
   getById(id: number): Observable<Neighborhood> {
@@ -41,7 +52,9 @@ export class NeighborhoodApi {
       .set('page', '1')
       .set('pageSize', '1000');
 
-    return this.http.get<Neighborhood[]>(`${this.apiUrl}/search`, { params });
+    return this.http
+      .get<CollectionResponse<Neighborhood>>(`${this.apiUrl}/search`, { params })
+      .pipe(map((response) => this.toCollection(response)));
   }
 
   create(neighborhood: NeighborhoodRequest): Observable<Neighborhood> {
@@ -55,6 +68,11 @@ export class NeighborhoodApi {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  private toCollection<T>(response: CollectionResponse<T>): T[] {
+    if (Array.isArray(response)) return response;
+    return response.data ?? response.items ?? [];
+  }
 }
 
 @Injectable()
@@ -65,8 +83,12 @@ export class NeighborhoodDependencyApi {
 
   findByNeighborhood(neighborhoodId: number): Observable<NeighborhoodDependencies> {
     return forkJoin({
-      points: this.http.get<NeighborhoodPoint[]>(this.pointsUrl),
-      annotations: this.http.get<NeighborhoodAnnotation[]>(this.annotationsUrl),
+      points: this.http
+        .get<CollectionResponse<NeighborhoodPoint>>(this.pointsUrl)
+        .pipe(map((response) => this.toCollection(response))),
+      annotations: this.http
+        .get<CollectionResponse<NeighborhoodAnnotation>>(this.annotationsUrl)
+        .pipe(map((response) => this.toCollection(response))),
     }).pipe(
       map(({ points, annotations }) => ({
         points: points.filter((point) => Number(point.id_neighborhood) === Number(neighborhoodId)),
@@ -75,5 +97,10 @@ export class NeighborhoodDependencyApi {
         ),
       })),
     );
+  }
+
+  private toCollection<T>(response: CollectionResponse<T>): T[] {
+    if (Array.isArray(response)) return response;
+    return response.data ?? response.items ?? [];
   }
 }
