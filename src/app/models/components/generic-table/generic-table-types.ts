@@ -33,11 +33,35 @@ export interface FilterOption {
   value: string | number | boolean;
 }
 
-export interface FilterGroup {
+/**
+ * Filtro tipo chips (por defecto).
+ * Retrocompatible: si no se especifica 'type', se trata como chip.
+ */
+export interface ChipFilterGroup {
+  type?: 'chip';
   label: string;
   key: string;
   options: FilterOption[];
 }
+
+/**
+ * Filtro tipo select/dropdown.
+ * Usar cuando las opciones son muchas o provienen de datos dinámicos.
+ */
+export interface SelectFilterGroup {
+  type: 'select';
+  key: string;
+  label: string;
+  /** Texto de la opción vacía. Por defecto: 'Todos' */
+  placeholder?: string;
+  options: FilterOption[];
+}
+
+/**
+ * Unión de tipos de filtro.
+ * Retrocompatible: los FilterGroup existentes sin 'type' funcionan como ChipFilterGroup.
+ */
+export type FilterGroup = ChipFilterGroup | SelectFilterGroup;
 
 export interface TableAction {
   /** Identificador de la acción */

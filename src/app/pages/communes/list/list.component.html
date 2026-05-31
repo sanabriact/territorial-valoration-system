@@ -1,0 +1,17 @@
+<app-generic-table
+  [columns]="columns"
+  [actions]="actions"
+  [data]="tableCommunes()"
+  [loading]="loading()"
+  [pagination]="pagination()"
+  [filterGroups]="filterGroups()"
+  [showFilters]="true"
+  cardTitle="Comunas registradas"
+  cardSubtitle="Consulta, crea, edita o elimina las comunas del sistema."
+  searchPlaceholder="Buscar comuna..."
+  emptyMessage="No se encontraron comunas."
+  (actionClicked)="onActionClicked($event)"
+  (filtersApplied)="onFiltersApplied($event)"
+  (searchChanged)="onSearch($event)"
+  (pageChanged)="onPageChange($event)">
+</app-generic-table>

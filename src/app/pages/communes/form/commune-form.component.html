@@ -1,0 +1,93 @@
+<section class="commune-form-page">
+  <form class="commune-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+    <div class="commune-form__body" *ngIf="!loadingCatalogs(); else loadingState">
+
+      <p class="commune-form__hint">
+        Selecciona el departamento y la ciudad a la que pertenece la comuna.
+        El sistema verificará los datos automáticamente.
+      </p>
+
+      <!-- Departamento y Ciudad en fila -->
+      <div class="commune-row">
+
+        <label class="commune-field">
+          <span>Departamento <strong>*</strong></span>
+          <select formControlName="id_department"
+            [class.commune-field__select--error]="isInvalid('id_department')">
+            <option [ngValue]="null" disabled>Selecciona un departamento</option>
+            <option *ngFor="let dep of departments()" [ngValue]="dep.id_department">
+              {{ dep.name }}
+            </option>
+          </select>
+          <small *ngIf="isInvalid('id_department')">El departamento es obligatorio.</small>
+        </label>
+
+        <label class="commune-field">
+          <span>Ciudad <strong>*</strong></span>
+          <select formControlName="id_city"
+            [class.commune-field__select--error]="isInvalid('id_city')"
+            [attr.disabled]="!form.get('id_department')?.value ? true : null">
+            <option [ngValue]="null" disabled>
+              {{ !form.get('id_department')?.value ? 'Primero selecciona un departamento' : 'Selecciona una ciudad' }}
+            </option>
+            <option *ngFor="let city of filteredCities()" [ngValue]="city.id_city">
+              {{ city.name }}
+            </option>
+          </select>
+          <small *ngIf="isInvalid('id_city')">La ciudad es obligatoria.</small>
+        </label>
+
+      </div>
+
+      <!-- Nombre de la comuna -->
+      <label class="commune-field commune-field--full">
+        <span>Nombre de la comuna <strong>*</strong></span>
+        <input
+          type="text"
+          formControlName="name"
+          placeholder="Ej. Comuna 8 - Bosques del Norte"
+          autocomplete="off"
+          [class.commune-field__input--error]="isInvalid('name')" />
+        <small *ngIf="isInvalid('name')">
+          <ng-container *ngIf="form.get('name')?.errors?.['required']">El nombre es obligatorio.</ng-container>
+          <ng-container *ngIf="form.get('name')?.errors?.['minlength']">Mínimo 3 caracteres.</ng-container>
+          <ng-container *ngIf="form.get('name')?.errors?.['maxlength']">Máximo 100 caracteres.</ng-container>
+        </small>
+        <em>Ingresa el nombre oficial de la comuna.</em>
+      </label>
+
+      <!-- Estado -->
+      <label class="commune-field commune-field--full">
+        <span>Estado <strong>*</strong></span>
+        <select formControlName="status">
+          <option value="active">Activa</option>
+          <option value="inactive">Inactiva</option>
+        </select>
+        <em>Las comunas inactivas no estarán disponibles para asignación.</em>
+      </label>
+
+    </div>
+
+    <ng-template #loadingState>
+      <div class="commune-form__loading">Cargando información...</div>
+    </ng-template>
+
+    <footer class="commune-form__footer">
+      <button
+        type="button"
+        class="commune-button commune-button--secondary"
+        (click)="onCancel()"
+        [disabled]="saving()">
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="commune-button commune-button--primary"
+        [disabled]="saving() || loadingCatalogs()">
+        {{ saving() ? 'Guardando...' : 'Guardar comuna' }}
+      </button>
+    </footer>
+
+  </form>
+</section>

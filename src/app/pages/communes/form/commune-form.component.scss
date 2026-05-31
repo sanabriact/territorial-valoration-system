@@ -1,0 +1,155 @@
+.commune-form-page {
+  display: flex;
+  justify-content: center;
+  color: #14213f;
+}
+
+.commune-form {
+  width: min(760px, 100%);
+  border: 1px solid #e0e6f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 16px 45px rgba(21, 35, 68, 0.08);
+}
+
+.commune-form__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+  padding: 24px 28px;
+  border-top: 1px solid #edf1f7;
+}
+
+.commune-form__body {
+  display: grid;
+  gap: 22px;
+  padding: 28px;
+}
+
+.commune-form__hint {
+  margin: 0;
+  color: #5f6b84;
+  font-size: 0.9rem;
+}
+
+.commune-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.commune-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  span {
+    color: #263550;
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  strong {
+    color: #ef1b2d;
+  }
+
+  em,
+  small {
+    color: #647089;
+    font-size: 0.78rem;
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  > small {
+    color: #dc2626;
+  }
+
+  input,
+  select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid #d8dfeb;
+    border-radius: 8px;
+    color: #102044;
+    background: #ffffff;
+    outline: 0;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: #1263ff;
+    box-shadow: 0 0 0 3px rgba(18, 99, 255, 0.12);
+  }
+
+  select:disabled {
+    background: #f4f6fa;
+    color: #9aa3b5;
+    cursor: not-allowed;
+  }
+
+  &__select--error,
+  &__input--error {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+  }
+}
+
+.commune-field--full {
+  grid-column: 1 / -1;
+}
+
+.commune-form__loading {
+  padding: 42px 28px;
+  color: #66738c;
+  text-align: center;
+  font-weight: 800;
+}
+
+.commune-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 170px;
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0 18px;
+  cursor: pointer;
+  font-weight: 800;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.commune-button--primary {
+  background: #1263ff;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(18, 99, 255, 0.24);
+}
+
+.commune-button--secondary {
+  border-color: #d8dfeb;
+  background: #ffffff;
+  color: #25324d;
+}
+
+@media (max-width: 720px) {
+  .commune-form__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .commune-row {
+    grid-template-columns: 1fr;
+  }
+
+  .commune-button {
+    width: 100%;
+  }
+}

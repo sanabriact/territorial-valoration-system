@@ -53,17 +53,38 @@
               Limpiar todo
             </button>
           </div>
+
           <div class="gt-filter-group" *ngFor="let group of filterGroups(); trackBy: trackByIndex">
             <p class="gt-filter-group__label">{{ group.label }}</p>
-            <div class="gt-filter-group__options">
+
+            <!-- Select filter — solo cuando type === 'select' -->
+            <div *ngIf="isSelectFilter(group)" class="gt-filter-select-wrapper">
+              <select
+                class="gt-filter-select"
+                [value]="activeFilters()[group.key]"
+                (change)="onSelectFilterChange(group.key, $event)">
+                <option value="">{{ group.placeholder ?? 'Todos' }}</option>
+                <option
+                  *ngFor="let opt of group.options; trackBy: trackByIndex"
+                  [value]="opt.value">
+                  {{ opt.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Chip filter — cuando type === 'chip' o no se especifica (retrocompatible) -->
+            <div *ngIf="isChipFilter(group)" class="gt-filter-group__options">
               <button *ngFor="let opt of group.options; trackBy: trackByIndex" class="gt-filter-chip"
-                [class.gt-filter-chip--active]="activeFilters()[group.key] === opt.value" (click)="activeFilters()[group.key] === opt.value
+                [class.gt-filter-chip--active]="activeFilters()[group.key] === opt.value"
+                (click)="activeFilters()[group.key] === opt.value
                   ? clearFilter(group.key)
-                  : setFilter(group.key, opt.value)" type="button">
+                  : setFilter(group.key, opt.value)"
+                type="button">
                 {{ opt.label }}
               </button>
             </div>
           </div>
+
           <div class="gt-filter-dropdown__footer">
             <button class="gt-btn gt-btn--sm gt-btn--ghost" (click)="filterDropdownOpen.set(false)" type="button">
               Cancelar
@@ -271,7 +292,7 @@
               <td *ngFor="let col of columns(); trackBy: trackByIndex" class="gt-table__td"
                 [class]="col.cellClass ?? ''">
                 <ng-container [ngTemplateOutlet]="cellContent" [ngTemplateOutletContext]="{ row: row, col: col }">
-                  </ng-container>
+                </ng-container>
               </td>
 
               <td class="gt-table__td gt-table__td--actions" *ngIf="showActions()">
@@ -345,7 +366,8 @@
       </div>
     </ng-template>
   </div>
-  </div>
+</div>
+
 <ng-template #cellContent let-row="row" let-col="col">
   <ng-container *ngIf="col.type === 'image'">
     <img [src]="getCellValue(row, col.key)" [alt]="col.label" class="gt-table__img"

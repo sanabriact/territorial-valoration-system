@@ -486,3 +486,40 @@ $delete-color: #dc2626;        // Rojo para la papelera de eliminación
 .gt-tree-cell--child {
   padding-left: 32px;
 }
+
+// ── Select filter (dentro del dropdown de filtros) ────────────────────────
+.gt-filter-select-wrapper {
+  position: relative;
+
+  select.gt-filter-select {
+    width: 100%;
+    padding: 6px 28px 6px 10px;
+    border: 1px solid var(--gt-border, #e2e8f0);
+    border-radius: 6px;
+    background-color: var(--gt-surface, #fff);
+    color: var(--gt-text, #1e293b);
+    font-size: 13px;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+
+    &:focus {
+      border-color: var(--gt-primary, #3b82f6);
+    }
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--gt-text-muted, #64748b);
+    pointer-events: none;
+  }
+}
