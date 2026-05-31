@@ -4,6 +4,7 @@ import { officialRoutes } from './officials/official.routes';
 import { citizensRoutes } from './citizens/citizens.routes';
 import { categoriesRoutes } from './categories/categories.routes';
 import { communesRoutes } from './communes/communes.routes';
+import { neighborhoodsRoutes } from './neighborhoods/neighborhoods.routes';
 
 export const pagesRoutes: Routes = [
     {
@@ -16,5 +17,6 @@ export const pagesRoutes: Routes = [
     ...officialRoutes,
     ...citizensRoutes,
     ...categoriesRoutes,
-    ...communesRoutes
+    ...communesRoutes,
+    ...neighborhoodsRoutes
 ];

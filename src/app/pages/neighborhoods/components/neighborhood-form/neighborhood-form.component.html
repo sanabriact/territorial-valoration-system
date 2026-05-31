@@ -1,0 +1,59 @@
+<section class="neighborhood-form-page">
+  <form class="neighborhood-form" [formGroup]="neighborhoodForm" (ngSubmit)="save()">
+    <header class="neighborhood-form__header">
+      <div>
+        <h1>{{ title() }}</h1>
+        <p>{{ subtitle() }}</p>
+      </div>
+      <button type="button" class="neighborhood-form__close" (click)="cancel()" aria-label="Cancelar">
+        <iconify-icon icon="solar:close-circle-linear"></iconify-icon>
+      </button>
+    </header>
+
+    <div class="neighborhood-form__body" *ngIf="!loading(); else loadingState">
+      <label class="neighborhood-field">
+        <span>Comuna <strong>*</strong></span>
+        <select formControlName="id_commune">
+          <option [ngValue]="0">Selecciona una comuna</option>
+          <option *ngFor="let commune of communes()" [ngValue]="commune.id_commune">
+            {{ commune.name }}
+          </option>
+        </select>
+        <small *ngIf="hasFieldError('id_commune')">Selecciona una comuna registrada.</small>
+      </label>
+
+      <label class="neighborhood-field">
+        <span>Nombre del barrio <strong>*</strong></span>
+        <input type="text" formControlName="name" placeholder="Ej. San Fernando" />
+        <small *ngIf="hasFieldError('name')">Ingresa al menos 3 caracteres.</small>
+      </label>
+
+      <label class="neighborhood-field">
+        <span>Estado <strong>*</strong></span>
+        <select formControlName="status">
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+        </select>
+      </label>
+
+      <div class="neighborhood-form__notice">
+        <iconify-icon icon="solar:info-circle-bold"></iconify-icon>
+        <span>El nombre no puede repetirse dentro de la misma comuna.</span>
+      </div>
+    </div>
+
+    <ng-template #loadingState>
+      <div class="neighborhood-form__loading">Cargando informacion...</div>
+    </ng-template>
+
+    <footer class="neighborhood-form__footer">
+      <button type="button" class="neighborhood-button neighborhood-button--secondary" (click)="cancel()" [disabled]="saving()">
+        Cancelar
+      </button>
+      <button type="submit" class="neighborhood-button neighborhood-button--primary" [disabled]="saving() || loading()">
+        <iconify-icon icon="solar:diskette-linear"></iconify-icon>
+        {{ saving() ? 'Guardando...' : 'Guardar barrio' }}
+      </button>
+    </footer>
+  </form>
+</section>
