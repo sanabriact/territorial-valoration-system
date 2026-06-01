@@ -72,41 +72,7 @@
         <div class="w-px h-10 bg-slate-200"></div>
 
         <!-- USER -->
-        <div
-            class="flex items-center gap-3 cursor-pointer hover:bg-slate-50 px-3 py-2 rounded-2xl transition-all duration-200">
-
-            <!-- AVATAR -->
-            <div
-                class="w-[48px] h-[48px] rounded-full bg-blue-700 flex items-center justify-center text-white font-semibold text-[16px] uppercase shadow-sm">
-
-                {{ user?.name?.charAt(0) }}
-
-            </div>
-
-            <!-- USER INFO -->
-            <div class="hidden sm:flex flex-col leading-tight">
-
-                <!-- NAME -->
-                <span class="text-[15px] font-semibold text-slate-900">
-
-                    {{ user?.name }}
-
-                </span>
-
-                <!-- ROLE -->
-                <span class="text-[13px] text-slate-500 font-medium">
-
-                    {{ user?.role }}
-
-                </span>
-
-            </div>
-
-            <!-- ARROW -->
-            <i class="iconify text-slate-400 text-[18px]" data-icon="solar:alt-arrow-down-linear">
-            </i>
-
-        </div>
+        <app-profile-menu [user]="user"></app-profile-menu>
 
     </div>
 

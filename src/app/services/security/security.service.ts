@@ -1,48 +1,56 @@
 import { Injectable, inject } from '@angular/core';
-import { Auth, GoogleAuthProvider, GithubAuthProvider,
-         signInWithPopup, signOut, user } from '@angular/fire/auth';
-import { BehaviorSubject, from, Observable } from 'rxjs';
+import {
+  Auth,
+  GithubAuthProvider,
+  GoogleAuthProvider,
+  OAuthProvider,
+  User as FirebaseUser,
+  signInWithPopup,
+  signOut,
+  user,
+} from '@angular/fire/auth';
+import { BehaviorSubject, Observable, from } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { AppUser } from '../../models/security/AppUser';
+import { AppUser, AppUserRole } from '../../models/security/AppUser';
+import { StorageService } from '../storage/storage.service';
+import { UserRoleResolverService } from './user-role-resolver.service';
+
+type SupportedOAuthProvider = GoogleAuthProvider | GithubAuthProvider | OAuthProvider;
 
 @Injectable({ providedIn: 'root' })
 export class SecurityService {
-  private auth = inject(Auth);
+  private readonly auth = inject(Auth);
+  private readonly storage = inject(StorageService);
+  private readonly roleResolver = inject(UserRoleResolverService);
+  private readonly userStorageKey = 'appUser';
 
-  // Observable público del usuario actual
   readonly user$ = user(this.auth);
 
-  private currentUserSubject = new BehaviorSubject<AppUser | null>(
+  private readonly currentUserSubject = new BehaviorSubject<AppUser | null>(
     this.loadFromStorage()
   );
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
-  // ── Login con Google ─────────────────────────────────────────────
   loginWithGoogle(): Observable<AppUser> {
-    return from(
-      signInWithPopup(this.auth, new GoogleAuthProvider())
-        .then(result => this.buildAppUser(result.user))
-    ).pipe(tap(u => this.setUser(u)));
+    return this.loginWithProvider(new GoogleAuthProvider());
   }
 
-  // ── Login con GitHub ─────────────────────────────────────────────
   loginWithGithub(): Observable<AppUser> {
-    return from(
-      signInWithPopup(this.auth, new GithubAuthProvider())
-        .then(result => this.buildAppUser(result.user))
-    ).pipe(tap(u => this.setUser(u)));
+    return this.loginWithProvider(new GithubAuthProvider());
   }
 
-  // ── Logout ───────────────────────────────────────────────────────
+  loginWithMicrosoft(): Observable<AppUser> {
+    return this.loginWithProvider(new OAuthProvider('microsoft.com'));
+  }
+
   logout(): Observable<void> {
-    return from(signOut(this.auth)).pipe(
+    return from(signOut(this.auth).catch(() => undefined)).pipe(
       tap(() => this.clearUser())
     );
   }
 
-  // ── Obtener token fresco (para el interceptor) ───────────────────
   async getIdToken(): Promise<string | null> {
-    return this.auth.currentUser?.getIdToken() ?? null;
+    return this.auth.currentUser?.getIdToken() ?? this.getUser()?.idToken ?? null;
   }
 
   getUser(): AppUser | null {
@@ -53,31 +61,47 @@ export class SecurityService {
     return !!this.currentUserSubject.value;
   }
 
-  // ── Helpers privados ─────────────────────────────────────────────
-  private async buildAppUser(firebaseUser: any): Promise<AppUser> {
+  changeRole(role: AppUserRole): void {
+    const currentUser = this.getUser();
+    if (!currentUser) return;
+
+    this.setUser({ ...currentUser, role });
+  }
+
+  private loginWithProvider(provider: SupportedOAuthProvider): Observable<AppUser> {
+    return from(
+      signInWithPopup(this.auth, provider).then(result => this.buildAppUser(result.user))
+    ).pipe(tap(appUser => this.setUser(appUser)));
+  }
+
+  private async buildAppUser(firebaseUser: FirebaseUser): Promise<AppUser> {
     return {
-      uid:     firebaseUser.uid,
-      name:    firebaseUser.displayName,
-      email:   firebaseUser.email,
-      photo:   firebaseUser.photoURL,
+      uid: firebaseUser.uid,
+      name: firebaseUser.displayName ?? firebaseUser.email,
+      email: firebaseUser.email,
+      photo: firebaseUser.photoURL,
       idToken: await firebaseUser.getIdToken(),
+      role: this.roleResolver.resolve(firebaseUser.email),
     };
   }
 
-  private setUser(user: AppUser) {
-    this.currentUserSubject.next(user);
-    localStorage.setItem('appUser', JSON.stringify(user));
+  private setUser(appUser: AppUser): void {
+    this.currentUserSubject.next(appUser);
+    this.storage.setObject(this.userStorageKey, appUser);
   }
 
-  private clearUser() {
+  private clearUser(): void {
     this.currentUserSubject.next(null);
-    localStorage.removeItem('appUser');
+    this.storage.removeItem(this.userStorageKey);
   }
 
   private loadFromStorage(): AppUser | null {
-    try {
-      const raw = localStorage.getItem('appUser');
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
+    const storedUser = this.storage.getObject<AppUser>(this.userStorageKey);
+    if (!storedUser) return null;
+
+    return {
+      ...storedUser,
+      role: storedUser.role ?? this.roleResolver.resolve(storedUser.email),
+    };
   }
 }

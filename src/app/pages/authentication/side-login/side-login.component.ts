@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../material.module';
 import { SecurityService } from '../../../services/security/security.service'
 import Swal from 'sweetalert2';
+import { Observable } from 'rxjs';
+import { AppUser } from '../../../models/security/AppUser';
 
 @Component({
   selector: 'app-side-login',
@@ -16,20 +18,21 @@ export class AppSideLoginComponent {
   private router   = inject(Router);
   loading = false;
 
-  loginGoogle() {
-    this.loading = true;
-    this.security.loginWithGoogle().subscribe({
-      next: () => this.router.navigate(['/home']),
-      error: (e) => {
-        this.loading = false;
-        Swal.fire('Error', e.message, 'error');
-      },
-    });
+  loginGoogle(): void {
+    this.login(this.security.loginWithGoogle());
   }
 
-  loginGithub() {
+  loginGithub(): void {
+    this.login(this.security.loginWithGithub());
+  }
+
+  loginMicrosoft(): void {
+    this.login(this.security.loginWithMicrosoft());
+  }
+
+  private login(loginRequest: Observable<AppUser>): void {
     this.loading = true;
-    this.security.loginWithGithub().subscribe({
+    loginRequest.subscribe({
       next: () => this.router.navigate(['/home']),
       error: (e) => {
         this.loading = false;

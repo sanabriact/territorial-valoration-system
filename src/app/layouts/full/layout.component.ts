@@ -1,16 +1,16 @@
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 
 import { MaterialModule } from '../../material.module';
 
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 
-import { User } from '../../models/User';
 import { filter } from 'rxjs';
+import { SecurityService } from '../../services/security/security.service';
 
 @Component({
   selector: 'app-layout',
@@ -28,9 +28,11 @@ export class LayoutComponent {
 
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
+  private security = inject(SecurityService);
 
   title = signal<string>('');
   subtitle = signal<string>('');
+  user = toSignal(this.security.currentUser$, { initialValue: this.security.getUser() });
 
   constructor() {
     // 3. Escuchamos activamente cuando la navegación termine con éxito (NavigationEnd)
@@ -62,13 +64,4 @@ export class LayoutComponent {
     this.title.set(routeData['title'] || 'Sistema');
     this.subtitle.set(routeData['subtitle'] || '');
   }
-
-  user: User = {
-    id: 1,
-    name: 'Juan Felipe',
-    email: 'juan@gmail.com',
-    phone: 123456789,
-    status: true,
-    role: 'FUNCIONARIO'
-  };
 }

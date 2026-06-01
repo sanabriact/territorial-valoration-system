@@ -32,6 +32,29 @@
 
       <button
         class="login-button"
+        (click)="loginMicrosoft()"
+        [disabled]="loading">
+
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 23 23"
+          aria-hidden="true">
+
+          <path fill="#f25022" d="M1 1h10v10H1z" />
+          <path fill="#7fba00" d="M12 1h10v10H12z" />
+          <path fill="#00a4ef" d="M1 12h10v10H1z" />
+          <path fill="#ffb900" d="M12 12h10v10H12z" />
+        </svg>
+
+        <span>
+          Continuar con Microsoft
+        </span>
+
+      </button>
+
+      <button
+        class="login-button"
         (click)="loginGithub()"
         [disabled]="loading">
 

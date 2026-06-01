@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, NgModule, OnInit, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { MaterialModule } from '../../../material.module';
-import { User } from '../../../models/User';
+import { AppUser } from '../../../models/security/AppUser';
 import { SidebarSection } from '../../../models/interfaces/sidebar/SidebarSection';
 
 @Component({
@@ -18,12 +18,14 @@ import { SidebarSection } from '../../../models/interfaces/sidebar/SidebarSectio
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 
-export class SidebarComponent implements OnInit {
-    @Input() user: User | null = null;
+export class SidebarComponent implements OnChanges {
+    @Input() user: AppUser | null = null;
     sections: SidebarSection[] = [];
 
-    ngOnInit(): void {
-        this.loadMenu();
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['user']) {
+            this.loadMenu();
+        }
     }
 
     private loadMenu(): void {

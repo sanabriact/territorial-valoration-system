@@ -6,13 +6,14 @@ import {
   CUSTOM_ELEMENTS_SCHEMA
 } from '@angular/core';
 
-import { User } from '../../../models/User';
+import { AppUser } from '../../../models/security/AppUser';
 import { MaterialModule } from "../../../material.module";
+import { ProfileMenuComponent } from './profile-menu/profile-menu.component';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  imports: [MaterialModule],
+  imports: [MaterialModule, ProfileMenuComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HeaderComponent {
@@ -20,6 +21,6 @@ export class HeaderComponent {
   @Input() title = '';
   @Input() subtitle = '';
   @Input() showGuideButton = true;
-  @Input() user: User | null = null;
+  @Input() user: AppUser | null = null;
   @Output() toggleMobileNav = new EventEmitter<void>();
 }

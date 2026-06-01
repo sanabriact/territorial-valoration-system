@@ -2,7 +2,7 @@
 
     <!-- SIDEBAR -->
     <mat-sidenav mode="side" opened disableClose class="sidebar-container">
-        <app-sidebar [user]="user">
+        <app-sidebar [user]="user()">
         </app-sidebar>
     </mat-sidenav>
 
@@ -16,7 +16,7 @@
             [title]="title()"
             [subtitle]="subtitle()" 
             [showGuideButton]="false" 
-            [user]="user">
+            [user]="user()">
             </app-header>
 
             <!-- PAGE -->
