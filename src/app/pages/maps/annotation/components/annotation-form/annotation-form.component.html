@@ -1,0 +1,97 @@
+<form class="annotation-form" (ngSubmit)="submit()">
+  <header>
+    <div>
+      <h2>Nueva anotacion</h2>
+      <p>Los campos con * son obligatorios.</p>
+    </div>
+    <button type="button" (click)="cancel()" aria-label="Cerrar">x</button>
+  </header>
+
+  <section>
+    <h3>1. Ubicacion</h3>
+    <div class="annotation-coordinates">
+      <label>
+        <span>Latitud *</span>
+        <input type="text" [value]="latitude() | number:'1.6-6'" readonly>
+      </label>
+      <label>
+        <span>Longitud *</span>
+        <input type="text" [value]="longitude() | number:'1.6-6'" readonly>
+      </label>
+    </div>
+  </section>
+
+  <section>
+    <h3>2. Descripcion</h3>
+    <label class="annotation-field">
+      <span>Descripcion *</span>
+      <textarea
+        maxlength="500"
+        placeholder="Describe la situacion o hallazgo..."
+        [ngModel]="description()"
+        name="description"
+        (ngModelChange)="description.set($event)">
+      </textarea>
+      <small>{{ description().length }}/500</small>
+    </label>
+  </section>
+
+  <section>
+    <h3>3. Categorias *</h3>
+    <div class="annotation-search">
+      <input
+        type="text"
+        placeholder="Buscar categorias..."
+        [ngModel]="categoryQuery()"
+        name="categoryQuery"
+        (ngModelChange)="categoryQuery.set($event)">
+    </div>
+
+    <div class="annotation-categories">
+      @for(category of filteredCategories(); track category.id_category) {
+        <button
+          type="button"
+          [class.annotation-category--active]="categoryIds().includes(category.id_category)"
+          (click)="toggleCategory(category.id_category)">
+          {{ category.name }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <section>
+    <h3>4. Fotografias (max. 5)</h3>
+    <label
+      class="annotation-dropzone"
+      (drop)="onDrop($event)"
+      (dragover)="onDragOver($event)">
+      <input type="file" accept="image/*" multiple (change)="onFileInput($event)">
+      <strong>Arrastra y suelta imagenes aqui</strong>
+      <span>o haz clic para seleccionar</span>
+    </label>
+
+    <div class="annotation-files" *ngIf="files().length > 0">
+      @for(file of files(); track file.name + file.size) {
+        <button type="button" (click)="removeFile(file)">
+          {{ file.name }} x
+        </button>
+      }
+    </div>
+  </section>
+
+  <section>
+    <h3>5. Entidades de interes *</h3>
+    <select multiple (change)="onEntityChange($event)">
+      @for(entity of entities(); track entity.id_entity) {
+        <option [value]="entity.id_entity">{{ entity.name }}</option>
+      }
+    </select>
+  </section>
+
+  <footer>
+    <button type="button" class="annotation-btn annotation-btn--secondary" (click)="cancel()">Cancelar</button>
+    <button type="submit" class="annotation-btn annotation-btn--primary" [disabled]="!canSubmit()">
+      {{ saving() ? 'Guardando...' : 'Guardar anotacion' }}
+    </button>
+  </footer>
+</form>

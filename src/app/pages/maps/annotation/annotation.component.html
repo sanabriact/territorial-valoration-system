@@ -1,0 +1,73 @@
+<section class="annotation-page">
+  <div class="annotation-filters">
+    <label>
+      <span>Comuna</span>
+      <select [ngModel]="selectedCommuneId()" (ngModelChange)="onCommuneChange($event)">
+        @for(commune of communes(); track commune.id_commune) {
+          <option [ngValue]="commune.id_commune">{{ commune.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      <span>Barrio</span>
+      <select [ngModel]="selectedNeighborhoodId()" (ngModelChange)="selectNeighborhood($event)">
+        @for(neighborhood of filteredNeighborhoods(); track neighborhood.id_neighborhood) {
+          <option [ngValue]="neighborhood.id_neighborhood">{{ neighborhood.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      <span>Categoria</span>
+      <select [ngModel]="selectedCategoryFilter()" (ngModelChange)="selectedCategoryFilter.set($event)">
+        <option [ngValue]="null">Todas las categorias</option>
+        @for(category of categories(); track category.id_category) {
+          <option [ngValue]="category.id_category">{{ category.name }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  <div class="annotation-workspace">
+    <div class="annotation-map-area">
+      @if(selectedLocation()) {
+        <div class="annotation-coord-card">
+          <strong>Coordenadas seleccionadas</strong>
+          <span>Latitud: {{ selectedLocation()!.latitude | number:'1.6-6' }}</span>
+          <span>Longitud: {{ selectedLocation()!.longitude | number:'1.6-6' }}</span>
+        </div>
+      }
+
+      @if(loading()) {
+        <div class="annotation-loading">Cargando mapa...</div>
+      } @else {
+        <app-annotation-map
+          [communePolygons]="communePolygons()"
+          [polygon]="selectedPolygon()"
+          [savedMarkers]="savedMarkers()"
+          (locationSelected)="onMapSelection($event)">
+        </app-annotation-map>
+      }
+    </div>
+
+    <aside class="annotation-side-panel">
+      @if(selectedLocation()) {
+        <app-annotation-form
+          [latitude]="selectedLocation()!.latitude"
+          [longitude]="selectedLocation()!.longitude"
+          [categories]="categories()"
+          [entities]="entities()"
+          [saving]="saving()"
+          (formCancel)="closeForm()"
+          (formSubmit)="saveAnnotation($event)">
+        </app-annotation-form>
+      } @else {
+        <div class="annotation-empty-form">
+          <h2>Nueva anotacion</h2>
+          <p>Haz clic dentro del poligono del barrio para cargar las coordenadas y completar el formulario.</p>
+        </div>
+      }
+    </aside>
+  </div>
+</section>
