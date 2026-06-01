@@ -93,7 +93,7 @@
 .official-gps {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 18px;
   margin: 0;
   padding: 18px;
@@ -106,6 +106,42 @@
     color: #334155;
     font-size: 0.88rem;
     font-weight: 800;
+  }
+}
+
+.official-map-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
+  align-items: stretch;
+
+  > small {
+    grid-column: 1 / -1;
+    color: #dc2626;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+}
+
+.official-map-picker__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 120px;
+  padding: 16px;
+  border: 1px solid #dbe5f2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+
+  strong {
+    color: #0f172a;
+    font-size: 0.9rem;
+  }
+
+  span {
+    font-size: 0.84rem;
+    font-weight: 700;
   }
 }
 
@@ -161,7 +197,8 @@
     grid-template-columns: 1fr;
   }
 
-  .official-gps {
+  .official-gps,
+  .official-map-picker {
     grid-template-columns: 1fr;
   }
 }

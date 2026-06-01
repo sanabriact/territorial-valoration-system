@@ -5,13 +5,17 @@ import { Entity } from '../../../../models/Entity';
 import { Official, OfficialStatus } from '../../../../models/Official';
 import { OfficialFormValue } from '../../../../models/interfaces/form/OfficialFormValue';
 import { toDateTimeLocalValue } from './official-gps-date.util';
+import {
+  OfficialLocationMapComponent,
+  OfficialLocationSelection,
+} from '../official-location-map/official-location-map.component';
 
 export type OfficialFormMode = 'create' | 'edit';
 
 @Component({
   selector: 'app-official-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, OfficialLocationMapComponent],
   templateUrl: './official-form.component.html',
   styleUrls: ['./official-form.component.scss'],
 })
@@ -80,6 +84,25 @@ export class OfficialFormComponent {
   hasFieldError(field: keyof OfficialFormValue): boolean {
     const control = this.officialForm.controls[field];
     return control.invalid && (control.dirty || control.touched);
+  }
+
+  selectLocation(location: OfficialLocationSelection): void {
+    this.officialForm.patchValue({
+      last_latitude: Number(location.latitude.toFixed(6)),
+      last_longitude: Number(location.longitude.toFixed(6)),
+      last_gps_update: toDateTimeLocalValue(new Date()),
+    });
+
+    this.officialForm.controls.last_latitude.markAsDirty();
+    this.officialForm.controls.last_longitude.markAsDirty();
+  }
+
+  selectedLatitude(): number {
+    return this.officialForm.controls.last_latitude.value;
+  }
+
+  selectedLongitude(): number {
+    return this.officialForm.controls.last_longitude.value;
   }
 
   private toFormValue(official: Official): Omit<OfficialFormValue, 'last_gps_update'> & { last_gps_update: string } {
