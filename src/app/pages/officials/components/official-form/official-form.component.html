@@ -61,6 +61,41 @@
         </select>
       </label>
 
+      <fieldset class="official-gps">
+        <legend>Ubicacion GPS</legend>
+
+        <label class="official-switch">
+          <input type="checkbox" formControlName="gps_active" />
+          <span>GPS activo</span>
+        </label>
+
+        <label class="official-field">
+          <span>Latitud</span>
+          <input
+            type="number"
+            step="0.000001"
+            formControlName="last_latitude"
+            placeholder="5.070275" />
+          <small *ngIf="hasFieldError('last_latitude')">Ingresa una latitud valida.</small>
+        </label>
+
+        <label class="official-field">
+          <span>Longitud</span>
+          <input
+            type="number"
+            step="0.000001"
+            formControlName="last_longitude"
+            placeholder="-75.513817" />
+          <small *ngIf="hasFieldError('last_longitude')">Ingresa una longitud valida.</small>
+        </label>
+
+        <label class="official-field">
+          <span>Ultima actualizacion GPS</span>
+          <input type="datetime-local" formControlName="last_gps_update" />
+          <small *ngIf="hasFieldError('last_gps_update')">Ingresa la fecha de actualizacion.</small>
+        </label>
+      </fieldset>
+
       <footer class="official-form-actions">
         <button type="button" class="official-button official-button--secondary" (click)="cancel()">
           Cancelar

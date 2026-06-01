@@ -1,0 +1,135 @@
+<section class="tracking-page">
+
+  <div class="tracking-toolbar">
+
+    <div class="tracking-filter">
+      <label for="entityFilter">Filtrar por entidad</label>
+      <select
+        id="entityFilter"
+        [ngModel]="selectedEntityId()"
+        (ngModelChange)="onEntityFilterChange($event)">
+        <option [ngValue]="null">Todas las entidades</option>
+        @for(entity of entities(); track entity.id_entity) {
+          <option [ngValue]="entity.id_entity">{{ entity.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="tracking-summary">
+      <div class="tracking-summary__item">
+        <span class="tracking-dot tracking-dot--online"></span>
+        <small>Funcionarios activos</small>
+        <strong>{{ onlineCount() }}</strong>
+      </div>
+
+      <div class="tracking-summary__item">
+        <span class="tracking-dot tracking-dot--offline"></span>
+        <small>Sin conexion</small>
+        <strong>{{ offlineCount() }}</strong>
+      </div>
+
+      <div class="tracking-summary__item">
+        <small>Total</small>
+        <strong>{{ filteredMarkers().length }}</strong>
+      </div>
+    </div>
+
+    <div class="tracking-refresh">
+      <span>Ultima actualizacion: {{ lastUpdate() | date:'h:mm:ss a' }}</span>
+      <button type="button" (click)="refreshNow()" [disabled]="refreshing()">
+        <mat-icon>refresh</mat-icon>
+        {{ refreshing() ? 'Actualizando' : 'Actualizar' }}
+      </button>
+    </div>
+
+  </div>
+
+  @if(hasLoadError()) {
+    <div class="tracking-alert">
+      No fue posible cargar la informacion de seguimiento. Intenta actualizar nuevamente.
+    </div>
+  }
+
+  <div class="tracking-content">
+
+    <div class="tracking-map-panel">
+
+      <div class="tracking-legend">
+        <strong>Convenciones</strong>
+        <span><i class="tracking-dot tracking-dot--online"></i> En linea</span>
+        <span><i class="tracking-dot tracking-dot--offline"></i> Sin conexion</span>
+        <span><i class="tracking-dot tracking-dot--known"></i> Ultima posicion conocida</span>
+      </div>
+
+      @if(loading()) {
+        <div class="tracking-loading">
+          Cargando ubicaciones...
+        </div>
+      } @else {
+        <app-official-tracking-map [markers]="filteredMarkers()" />
+      }
+
+      @if(!loading() && filteredMarkers().length === 0) {
+        <div class="tracking-empty-map">
+          No hay funcionarios activos para la entidad filtrada.
+        </div>
+      }
+
+    </div>
+
+    <aside class="tracking-list-panel">
+
+      <div class="tracking-list-panel__header">
+        <h2>Funcionarios ({{ filteredMarkers().length }})</h2>
+      </div>
+
+      <div class="tracking-search">
+        <mat-icon>search</mat-icon>
+        <input
+          type="text"
+          placeholder="Buscar funcionario..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)">
+      </div>
+
+      <div class="tracking-officials">
+        @for(marker of filteredMarkers(); track marker.id) {
+          <article class="tracking-official" [class.tracking-official--offline]="marker.status === 'offline'">
+            <div class="tracking-avatar">
+              {{ marker.name.charAt(0) }}
+            </div>
+
+            <div class="tracking-official__info">
+              <strong>{{ marker.name }}</strong>
+              <span>
+                <i class="tracking-dot" [class.tracking-dot--online]="marker.status === 'online'" [class.tracking-dot--offline]="marker.status === 'offline'"></i>
+                {{ marker.status === 'online' ? 'En linea' : 'Sin conexion' }}
+              </span>
+              <small>{{ marker.entityName }}</small>
+            </div>
+
+            <div class="tracking-official__meta">
+              <span>{{ formatLastUpdate(marker.lastUpdate) }}</span>
+              <small>{{ marker.latitude | number:'1.4-4' }}, {{ marker.longitude | number:'1.4-4' }}</small>
+            </div>
+          </article>
+        } @empty {
+          <div class="tracking-empty-list">
+            No hay funcionarios activos en la entidad filtrada.
+          </div>
+        }
+      </div>
+
+      <div class="tracking-info">
+        <mat-icon>info</mat-icon>
+        <p>
+          Las ubicaciones se actualizan cada 15 segundos. Si un funcionario pierde conexion,
+          se muestra su ultima posicion conocida.
+        </p>
+      </div>
+
+    </aside>
+
+  </div>
+
+</section>

@@ -96,10 +96,10 @@ export class OfficialCreateComponent implements OnInit {
             phone: value.phone.trim(),
             role: value.role,
             status: value.status,
-            last_latitude: null,
-            last_longitude: null,
+            last_latitude: value.last_latitude,
+            last_longitude: value.last_longitude,
             last_gps_update: null,
-            gps_active: false,
+            gps_active: value.gps_active,
         };
     }
 }

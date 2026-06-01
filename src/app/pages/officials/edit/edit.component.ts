@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin, switchMap, take } from 'rxjs';
 import Swal from 'sweetalert2';
@@ -106,7 +107,21 @@ export class OfficialEditComponent implements OnInit {
       return;
     }
 
-    void Swal.fire('Error', 'No se pudo guardar el funcionario.', 'error');
+    void Swal.fire('Error', this.getBackendErrorMessage(error), 'error');
+  }
+
+  private getBackendErrorMessage(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'No se pudo guardar el funcionario.';
+    }
+
+    const backendMessage = error.error?.message ?? error.error?.error;
+
+    if (Array.isArray(backendMessage)) {
+      return backendMessage.join('\n');
+    }
+
+    return backendMessage || `No se pudo guardar el funcionario. Codigo HTTP: ${error.status}`;
   }
 
   private toOfficial(value: OfficialFormValue, officialId: number): Official {
@@ -118,10 +133,10 @@ export class OfficialEditComponent implements OnInit {
       phone: value.phone.trim(),
       role: value.role,
       status: value.status,
-      last_latitude: null,
-      last_longitude: null,
+      last_latitude: value.last_latitude,
+      last_longitude: value.last_longitude,
       last_gps_update: null,
-      gps_active: false,
+      gps_active: value.gps_active,
     };
   }
 }
