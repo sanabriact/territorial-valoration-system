@@ -69,6 +69,6 @@ export class LayoutComponent {
     email: 'juan@gmail.com',
     phone: 123456789,
     status: true,
-    role: 'ADMIN'
+    role: 'FUNCIONARIO'
   };
 }

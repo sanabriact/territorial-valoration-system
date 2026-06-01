@@ -19,7 +19,7 @@ export class AppSideLoginComponent {
   loginGoogle() {
     this.loading = true;
     this.security.loginWithGoogle().subscribe({
-      next: () => this.router.navigate(['/']),
+      next: () => this.router.navigate(['/home']),
       error: (e) => {
         this.loading = false;
         Swal.fire('Error', e.message, 'error');
@@ -30,7 +30,7 @@ export class AppSideLoginComponent {
   loginGithub() {
     this.loading = true;
     this.security.loginWithGithub().subscribe({
-      next: () => this.router.navigate(['/']),
+      next: () => this.router.navigate(['/home']),
       error: (e) => {
         this.loading = false;
         Swal.fire('Error', e.message, 'error');

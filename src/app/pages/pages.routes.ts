@@ -5,6 +5,7 @@ import { citizensRoutes } from './citizens/citizens.routes';
 import { categoriesRoutes } from './categories/categories.routes';
 import { communesRoutes } from './communes/communes.routes';
 import { neighborhoodsRoutes } from './neighborhoods/neighborhoods.routes';
+import { demarcationRoutes } from './maps/demarcation/demarcation.routes';
 
 export const pagesRoutes: Routes = [
     {
@@ -18,5 +19,6 @@ export const pagesRoutes: Routes = [
     ...citizensRoutes,
     ...categoriesRoutes,
     ...communesRoutes,
-    ...neighborhoodsRoutes
+    ...neighborhoodsRoutes,
+    ...demarcationRoutes
 ];

@@ -1,0 +1,260 @@
+<div class="dem-layout">
+
+  <!-- ── LEFT PANEL ─────────────────────────────────────────── -->
+  <aside class="dem-sidebar">
+    <div class="dem-sidebar__header">
+      <h2>Selección de barrio</h2>
+    </div>
+
+    <!-- Search -->
+    <div class="dem-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        placeholder="Buscar barrio..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearch($event)"
+      />
+    </div>
+
+    <!-- Comuna filter -->
+    <div class="dem-filter">
+      <label>Comuna</label>
+      <div class="dem-filter__select">
+        <select (change)="onCommuneFilter($event)">
+          <option value="">Todas las comunas</option>
+          <option *ngFor="let commune of communes()" [value]="commune.id_commune">
+            {{ commune.name }}
+          </option>
+        </select>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Section title -->
+    <div class="dem-sidebar__section-title">Barrios</div>
+
+    <!-- Loading -->
+    <div class="dem-loading" *ngIf="loading()">
+      <span class="dem-spinner"></span>
+      Cargando...
+    </div>
+
+    <!-- List -->
+    <div class="dem-neighborhood-list" *ngIf="!loading()">
+      <button
+        *ngFor="let neighborhood of filteredNeighborhoods()"
+        class="dem-neighborhood-item"
+        [class.dem-neighborhood-item--active]="selectedNeighborhood()?.id_neighborhood === neighborhood.id_neighborhood"
+        type="button"
+        (click)="selectNeighborhood(neighborhood)"
+      >
+        <strong>{{ neighborhood.name }}</strong>
+        <small>{{ neighborhood.communeName }}</small>
+      </button>
+
+      <div class="dem-empty" *ngIf="filteredNeighborhoods().length === 0">
+        No se encontraron barrios.
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── CENTER: MAP ─────────────────────────────────────────── -->
+  <div class="dem-map-area">
+
+    <!-- Selected neighborhood chip -->
+    <div class="dem-selected-chip" *ngIf="selectedNeighborhood()">
+      <div class="dem-selected-chip__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <div>
+        <div class="dem-selected-chip__label">Barrio seleccionado:</div>
+        <div class="dem-selected-chip__name">{{ selectedNeighborhood()!.name }}</div>
+        <div class="dem-selected-chip__sub">{{ selectedNeighborhood()!.communeName }}</div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="dem-map-placeholder" *ngIf="!selectedNeighborhood()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      <p>Selecciona un barrio para comenzar la demarcación</p>
+    </div>
+
+    <!-- Map -->
+    <app-demarcation-map
+      *ngIf="selectedNeighborhood()"
+      #demMap
+      [initialPoints]="existingPoints()"
+      [mode]="mode()"
+      (pointsChanged)="onPointsChanged($event)"
+    />
+  </div>
+
+  <!-- ── RIGHT PANEL ─────────────────────────────────────────── -->
+  <aside class="dem-tools" *ngIf="selectedNeighborhood()">
+
+    <!-- Tools section -->
+    <div class="dem-tools__section">
+      <div class="dem-tools__section-header">
+        <span>Herramientas de demarcación</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+      </div>
+
+      <p class="dem-tools__hint">
+        Haz clic en el mapa para agregar puntos. Arrastra un punto para ajustarlo.
+      </p>
+
+      <!-- PAN mode -->
+      <button
+        type="button"
+        class="dem-tool-btn"
+        [class.dem-tool-btn--active]="mode() === 'pan'"
+        (click)="setMode('pan')"
+      >
+        <span class="dem-tool-btn__icon dem-tool-btn__icon--pan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>
+          </svg>
+        </span>
+        <div>
+          <strong>Mover mapa</strong>
+          <small>Arrastra para navegar</small>
+        </div>
+      </button>
+
+      <!-- ADD mode -->
+      <button
+        type="button"
+        class="dem-tool-btn"
+        [class.dem-tool-btn--active]="mode() === 'add'"
+        (click)="setMode('add')"
+      >
+        <span class="dem-tool-btn__icon dem-tool-btn__icon--add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <circle cx="12" cy="10" r="5"/>
+            <line x1="12" y1="5" x2="12" y2="15"/>
+            <line x1="7" y1="10" x2="17" y2="10"/>
+          </svg>
+        </span>
+        <div>
+          <strong>Agregar puntos</strong>
+          <small>Haz clic en el mapa</small>
+        </div>
+      </button>
+
+      <!-- EDIT mode -->
+      <button
+        type="button"
+        class="dem-tool-btn"
+        [class.dem-tool-btn--active]="mode() === 'edit'"
+        [disabled]="currentPoints().length === 0"
+        (click)="setMode('edit')"
+      >
+        <span class="dem-tool-btn__icon dem-tool-btn__icon--edit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </span>
+        <div>
+          <strong>Editar puntos</strong>
+          <small>Arrastra los puntos existentes</small>
+        </div>
+      </button>
+
+      <!-- CLEAR -->
+      <button
+        type="button"
+        class="dem-tool-btn dem-tool-btn--danger"
+        [disabled]="currentPoints().length === 0"
+        (click)="clearAll()"
+      >
+        <span class="dem-tool-btn__icon dem-tool-btn__icon--danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </span>
+        <div>
+          <strong>Limpiar</strong>
+          <small>Eliminar todos los puntos</small>
+        </div>
+      </button>
+    </div>
+
+    <!-- Coordinates table -->
+    <div class="dem-tools__section dem-tools__section--coords" *ngIf="currentPoints().length > 0">
+      <div class="dem-tools__section-header">
+        <span>Coordenadas del polígono ({{ pointCount() }} puntos)</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+      </div>
+
+      <div class="dem-coord-table-wrapper">
+        <table class="dem-coord-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Latitud</th>
+              <th>Longitud</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let pt of currentPoints(); let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ pt.latitude | number:'1.6-6' }}</td>
+              <td>{{ pt.longitude | number:'1.6-6' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="dem-tools__actions">
+      <button type="button" class="dem-btn dem-btn--cancel" (click)="cancel()">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="dem-btn dem-btn--save"
+        [disabled]="saving() || currentPoints().length < 3"
+        (click)="savePolygon()"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/> 
+        </svg>
+        {{ saving() ? 'Guardando...' : 'Guardar polígono' }}
+      </button>
+    </div>
+
+    <!-- Save notice -->
+    <div class="dem-save-notice" *ngIf="currentPoints().length >= 3">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      Al guardar, el polígono quedará asociado al barrio {{ selectedNeighborhood()?.name }}.
+    </div>
+
+  </aside>
+
+</div>
