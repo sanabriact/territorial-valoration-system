@@ -12,7 +12,7 @@ import {
   InterestedPartyRequest,
 } from '../../models/Annotation';
 
-type CollectionResponse<T> = T[] | { data?: T[]; items?: T[]; results?: T[]; rows?: T[] };
+type CollectionResponse<T> = T[] | { data?: T[]; items?: T[]; results?: T[]; rows?: T[]; value?: T[] };
 
 @Injectable({ providedIn: 'root' })
 export class AnnotationService {
@@ -66,6 +66,6 @@ export class AnnotationService {
 
   private toCollection<T>(response: CollectionResponse<T>): T[] {
     if (Array.isArray(response)) return response;
-    return response.data ?? response.items ?? response.results ?? response.rows ?? [];
+    return response.data ?? response.items ?? response.results ?? response.rows ?? response.value ?? [];
   }
 }

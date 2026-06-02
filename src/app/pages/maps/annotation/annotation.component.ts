@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize, forkJoin, of, switchMap } from 'rxjs';
+import { catchError, finalize, forkJoin, of, switchMap } from 'rxjs';
 import Swal from 'sweetalert2';
 import { Category } from '../../../models/Category';
 import { Commune } from '../../../models/Commune';
@@ -143,18 +144,9 @@ export class AnnotationComponent implements OnInit {
       status: 'active',
     }).pipe(
       switchMap((annotation) => {
-        const annotationId = annotation.id_annotation;
-        const requests = [
-          ...value.categoryIds.map((id_category) =>
-            this.annotationService.assignCategory({ id_annotation: annotationId, id_category }),
-          ),
-          ...value.entityIds.map((id_entity) =>
-            this.annotationService.assignInterestedParty({ id_annotation: annotationId, id_entity }),
-          ),
-          ...value.files.map((file) => this.annotationService.uploadEvidence(annotationId, file)),
-        ];
-
-        return requests.length > 0 ? forkJoin(requests).pipe(switchMap(() => of(annotation))) : of(annotation);
+        return this.saveAnnotationRelations(annotation.id_annotation, value).pipe(
+          switchMap(() => of(annotation)),
+        );
       }),
       finalize(() => this.saving.set(false)),
     ).subscribe({
@@ -166,8 +158,52 @@ export class AnnotationComponent implements OnInit {
         this.selectedLocation.set(null);
         void Swal.fire('Guardado', 'La anotacion fue registrada correctamente.', 'success');
       },
-      error: () => void Swal.fire('Error', 'No se pudo guardar la anotacion.', 'error'),
+      error: (error) => void Swal.fire('Error', this.getSaveErrorMessage(error), 'error'),
     });
+  }
+
+  private saveAnnotationRelations(annotationId: number, value: AnnotationFormValue) {
+    return forkJoin({
+      annotationCategories: this.annotationService
+        .getAnnotationCategories()
+        .pipe(catchError(() => of([]))),
+      interestedParties: this.annotationService
+        .getInterestedParties()
+        .pipe(catchError(() => of([]))),
+    }).pipe(
+      switchMap(({ annotationCategories, interestedParties }) => {
+        const categoryRequests = value.categoryIds
+          .filter((id_category) =>
+            !annotationCategories.some(
+              (item) =>
+                Number(item.id_annotation) === Number(annotationId) &&
+                Number(item.id_category) === Number(id_category),
+            ),
+          )
+          .map((id_category) =>
+            this.annotationService.assignCategory({ id_annotation: annotationId, id_category }),
+          );
+
+        const interestedPartyRequests = value.entityIds
+          .filter((id_entity) =>
+            !interestedParties.some(
+              (item) =>
+                Number(item.id_annotation) === Number(annotationId) &&
+                Number(item.id_entity) === Number(id_entity),
+            ),
+          )
+          .map((id_entity) =>
+            this.annotationService.assignInterestedParty({ id_annotation: annotationId, id_entity }),
+          );
+
+        const evidenceRequests = value.files.map((file) =>
+          this.annotationService.uploadEvidence(annotationId, file),
+        );
+
+        const requests = [...categoryRequests, ...interestedPartyRequests, ...evidenceRequests];
+        return requests.length > 0 ? forkJoin(requests) : of([]);
+      }),
+    );
   }
 
   private loadInitialData(): void {
@@ -205,5 +241,18 @@ export class AnnotationComponent implements OnInit {
       .sort((a, b) => Number(a.order) - Number(b.order))
       .map((point) => ({ latitude: Number(point.latitude), longitude: Number(point.longitude) }))
       .filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
+  }
+
+  private getSaveErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const backendMessage =
+        typeof error.error === 'string'
+          ? error.error
+          : error.error?.message ?? error.error?.error ?? error.message;
+
+      return backendMessage || `No se pudo guardar la anotacion. Codigo HTTP: ${error.status}`;
+    }
+
+    return 'No se pudo guardar la anotacion.';
   }
 }
