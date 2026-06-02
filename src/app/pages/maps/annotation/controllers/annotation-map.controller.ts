@@ -27,6 +27,7 @@ export class AnnotationMapController {
   private clickKey: EventsKey | null = null;
   private polygonFeature: Feature<Polygon> | null = null;
   private onSelection: ((selection: AnnotationMapSelection) => void) | null = null;
+  private onAnnotationSelection: ((annotationId: number) => void) | null = null;
 
   constructor(target: HTMLElement, center: MapCoordinates, zoom: number) {
     this.map = new OlMap({
@@ -41,7 +42,10 @@ export class AnnotationMapController {
         }),
         new VectorLayer({
           source: this.markerSource,
-          style: (feature) => this.getMarkerStyle(feature.get('label') ?? ''),
+          style: (feature) => this.getMarkerStyle(
+            feature.get('label') ?? '',
+            Boolean(feature.get('selected')),
+          ),
           zIndex: 2,
         }),
       ],
@@ -52,6 +56,16 @@ export class AnnotationMapController {
     });
 
     this.clickKey = this.map.on('click', (event) => {
+      const selectedAnnotation = this.map.forEachFeatureAtPixel(event.pixel, (feature) => {
+        const annotationId = feature.get('annotationId');
+        return typeof annotationId === 'number' ? annotationId : null;
+      });
+
+      if (selectedAnnotation) {
+        this.onAnnotationSelection?.(selectedAnnotation);
+        return;
+      }
+
       const [longitude, latitude] = toLonLat(event.coordinate);
       const insidePolygon = this.polygonFeature
         ? this.polygonFeature.getGeometry()?.intersectsCoordinate(event.coordinate) ?? false
@@ -67,6 +81,10 @@ export class AnnotationMapController {
 
   onLocationSelected(callback: (selection: AnnotationMapSelection) => void): void {
     this.onSelection = callback;
+  }
+
+  onAnnotationSelected(callback: (annotationId: number) => void): void {
+    this.onAnnotationSelection = callback;
   }
 
   setPolygon(polygon: NeighborhoodPolygon | null): void {
@@ -107,7 +125,10 @@ export class AnnotationMapController {
     markers.forEach((marker, index) => {
       const feature = new Feature({
         geometry: new Point(fromLonLat([marker.longitude, marker.latitude])),
-        label: String(index + 1),
+        label: marker.id ? '' : String(index + 1),
+        annotationId: marker.id,
+        status: marker.status,
+        selected: marker.selected,
       });
       this.markerSource.addFeature(feature);
     });
@@ -138,13 +159,15 @@ export class AnnotationMapController {
     });
   }
 
-  private getMarkerStyle(label: string): Style {
+  private getMarkerStyle(label: string, markerSelected = false): Style {
     const selected = label === 'selected';
+    const annotationSelected = label === '';
+    const annotationColor = markerSelected ? '#2563eb' : '#f59e0b';
 
     return new Style({
       image: new CircleStyle({
-        radius: selected ? 13 : 9,
-        fill: new Fill({ color: selected ? '#2563eb' : '#10b981' }),
+        radius: selected ? 13 : annotationSelected ? markerSelected ? 13 : 11 : 9,
+        fill: new Fill({ color: selected ? '#2563eb' : annotationSelected ? annotationColor : '#10b981' }),
         stroke: new Stroke({ color: '#ffffff', width: 3 }),
       }),
       text: selected ? undefined : new Text({

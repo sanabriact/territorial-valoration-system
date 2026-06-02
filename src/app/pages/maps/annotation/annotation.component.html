@@ -45,7 +45,8 @@
         <app-annotation-map
           [polygon]="selectedPolygon()"
           [savedMarkers]="savedMarkers()"
-          (locationSelected)="onMapSelection($event)">
+          (locationSelected)="onMapSelection($event)"
+          (annotationSelected)="selectExistingAnnotation($event)">
         </app-annotation-map>
       }
     </div>
@@ -62,10 +63,95 @@
           (formSubmit)="saveAnnotation($event)">
         </app-annotation-form>
       } @else {
-        <div class="annotation-empty-form">
-          <h2>Nueva anotacion</h2>
-          <p>Haz clic dentro del poligono del barrio para cargar las coordenadas y completar el formulario.</p>
-        </div>
+        @if(selectedAnnotation(); as annotation) {
+          <div class="annotation-detail">
+            <div class="annotation-detail__header">
+              <div>
+                <span class="annotation-chip">{{ getAnnotationCategoryLabel(annotation.id_annotation) }}</span>
+                <h2>Anotacion #{{ annotation.id_annotation }}</h2>
+              </div>
+              <button type="button" class="icon-button" aria-label="Cerrar detalle" (click)="closeAnnotationDetail()">x</button>
+            </div>
+
+            <p class="annotation-detail__location">
+              {{ getNeighborhoodLabel(annotation.id_neighborhood) }}
+            </p>
+            <p class="annotation-detail__description">{{ annotation.description }}</p>
+
+            @if(detailLoading()) {
+              <div class="annotation-detail__loading">Cargando detalle...</div>
+            } @else {
+              <div class="evidence-grid">
+                @for(evidence of selectedAnnotationEvidences(); track evidence.id_evidence) {
+                  <img [src]="getEvidenceUrl(evidence)" [alt]="'Evidencia ' + evidence.id_evidence">
+                } @empty {
+                  <div class="evidence-empty">Sin evidencias registradas.</div>
+                }
+              </div>
+
+              <section class="rating-summary">
+                <div>
+                  <span>Calificacion promedio</span>
+                  <strong>{{ averageRating() | number:'1.1-1' }}</strong>
+                  <small>{{ selectedAnnotationVotes().length }} calificaciones</small>
+                </div>
+
+                <div class="rating-bars">
+                  @for(row of ratingRows(); track row.star) {
+                    <div class="rating-bar">
+                      <span>{{ row.star }} estrella</span>
+                      <div><i [style.width.%]="row.percentage"></i></div>
+                      <b>{{ row.count }}</b>
+                    </div>
+                  }
+                </div>
+              </section>
+
+              <section class="vote-form">
+                <h3>Tu calificacion</h3>
+                <p>Tu opinion ayuda a priorizar las anotaciones mas importantes.</p>
+
+                <div class="star-input" aria-label="Seleccionar calificacion">
+                  @for(star of [1, 2, 3, 4, 5]; track star) {
+                    <button
+                      type="button"
+                      [class.active]="voteStars() >= star"
+                      [attr.aria-label]="star + ' estrellas'"
+                      (click)="setRating(star)">
+                      ★
+                    </button>
+                  }
+                </div>
+
+                <label>
+                  <span>Comentario</span>
+                  <textarea
+                    maxlength="500"
+                    rows="4"
+                    [ngModel]="voteComment()"
+                    (ngModelChange)="voteComment.set($event)"
+                    placeholder="Escribe tu comentario..."></textarea>
+                </label>
+
+                @if(existingCitizenVote()) {
+                  <div class="existing-vote">
+                    Ya calificaste esta anotacion con {{ existingCitizenVote()!.stars }} estrellas.
+                    Puedes editar tu calificacion.
+                  </div>
+                }
+
+                <button type="button" class="primary-action" [disabled]="voteSaving()" (click)="saveVote()">
+                  {{ voteSaving() ? 'Guardando...' : existingCitizenVote() ? 'Actualizar calificacion' : 'Guardar calificacion' }}
+                </button>
+              </section>
+            }
+          </div>
+        } @else {
+          <div class="annotation-empty-form">
+            <h2>Anotaciones</h2>
+            <p>Selecciona una anotacion en el mapa para ver su detalle y calificarla, o haz clic dentro del poligono para crear una nueva.</p>
+          </div>
+        }
       }
     </aside>
   </div>

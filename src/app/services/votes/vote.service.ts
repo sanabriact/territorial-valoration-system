@@ -18,11 +18,29 @@ export class VoteService {
       .pipe(map((response) => this.toCollection(response)));
   }
 
+  getById(id: number): Observable<Vote> {
+    return this.http.get<Vote>(`${this.apiUrl}/${id}`);
+  }
+
   search(query: string): Observable<Vote[]> {
     const params = new HttpParams().set('q', query);
     return this.http
       .get<CollectionResponse<Vote>>(`${this.apiUrl}/search`, { params })
       .pipe(map((response) => this.toCollection(response)));
+  }
+
+  getByAnnotation(annotationId: number): Observable<Vote[]> {
+    return this.getAll().pipe(
+      map((votes) => votes.filter((vote) => Number(vote.id_annotation) === Number(annotationId))),
+    );
+  }
+
+  getCitizenVote(annotationId: number, citizenId: number): Observable<Vote | null> {
+    return this.getByAnnotation(annotationId).pipe(
+      map((votes) =>
+        votes.find((vote) => Number(vote.id_citizen) === Number(citizenId)) ?? null,
+      ),
+    );
   }
 
   create(request: VoteRequest): Observable<Vote> {
@@ -31,6 +49,16 @@ export class VoteService {
 
   update(id: number, request: VoteRequest): Observable<Vote> {
     return this.http.put<Vote>(`${this.apiUrl}/${id}`, request);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  saveCitizenVote(existingVote: Vote | null, request: VoteRequest): Observable<Vote> {
+    return existingVote
+      ? this.update(existingVote.id_vote, request)
+      : this.create(request);
   }
 
   private toCollection<T>(response: CollectionResponse<T>): T[] {

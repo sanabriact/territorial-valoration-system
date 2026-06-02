@@ -4,6 +4,8 @@ export interface Vote {
   id_annotation: number;
   stars: number;
   comment: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface VoteRequest {

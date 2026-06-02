@@ -18,6 +18,7 @@ export class AnnotationMapComponent implements AfterViewInit, OnDestroy {
   readonly polygon = input<NeighborhoodPolygon | null>(null);
   readonly savedMarkers = input<AnnotationMarker[]>([]);
   readonly locationSelected = output<AnnotationMapSelection>();
+  readonly annotationSelected = output<number>();
 
   private controller: AnnotationMapController | null = null;
   private renderedPolygonVersion = '';
@@ -42,6 +43,7 @@ export class AnnotationMapComponent implements AfterViewInit, OnDestroy {
       13,
     );
     this.controller.onLocationSelected((selection) => this.locationSelected.emit(selection));
+    this.controller.onAnnotationSelected((annotationId) => this.annotationSelected.emit(annotationId));
     this.renderedPolygonVersion = this.polygon()?.version ?? '';
     this.controller.setPolygon(this.polygon());
     this.controller.setSavedMarkers(this.savedMarkers());

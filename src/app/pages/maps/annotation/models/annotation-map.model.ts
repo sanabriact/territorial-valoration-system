@@ -7,8 +7,11 @@ export interface AnnotationMapSelection {
 }
 
 export interface AnnotationMarker {
+  id?: number;
   latitude: number;
   longitude: number;
+  status?: string;
+  selected?: boolean;
 }
 
 export interface NeighborhoodPolygon {

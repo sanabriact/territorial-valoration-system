@@ -4,6 +4,8 @@ export interface Evidence {
   file_url: string;
   file_type: string;
   file_size: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface EvidenceRequest {

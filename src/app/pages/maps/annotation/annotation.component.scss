@@ -116,6 +116,241 @@
   }
 }
 
+.annotation-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 640px;
+  padding: 22px;
+  color: #172342;
+}
+
+.annotation-detail__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  h2 {
+    margin: 8px 0 0;
+    color: #121a3d;
+    font-size: 1.2rem;
+    font-weight: 900;
+  }
+}
+
+.annotation-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #d6deec;
+  border-radius: 8px;
+  color: #172342;
+  background: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.annotation-detail__location,
+.annotation-detail__description {
+  margin: 0;
+  color: #45526c;
+  line-height: 1.5;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.annotation-detail__description {
+  color: #172342;
+}
+
+.annotation-detail__loading,
+.evidence-empty {
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 16px;
+  color: #64748b;
+  text-align: center;
+  font-weight: 800;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #e2e8f0;
+  }
+
+  .evidence-empty {
+    grid-column: 1 / -1;
+  }
+}
+
+.rating-summary {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #dfe7f3;
+  border-radius: 8px;
+  background: #ffffff;
+
+  span,
+  small {
+    color: #64748b;
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
+
+  strong {
+    display: block;
+    margin: 8px 0 4px;
+    color: #121a3d;
+    font-size: 2rem;
+    font-weight: 900;
+  }
+}
+
+.rating-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rating-bar {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 8px;
+  color: #45526c;
+  font-size: 0.74rem;
+  font-weight: 800;
+
+  div {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e5eaf3;
+  }
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #2563eb;
+  }
+
+  b {
+    text-align: right;
+  }
+}
+
+.vote-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+    color: #121a3d;
+    font-size: 1rem;
+    font-weight: 900;
+  }
+
+  p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #45526c;
+    font-size: 0.82rem;
+    font-weight: 900;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 104px;
+    resize: vertical;
+    border: 1px solid #d6deec;
+    border-radius: 8px;
+    padding: 12px;
+    color: #172342;
+    font: inherit;
+    outline: none;
+  }
+}
+
+.star-input {
+  display: flex;
+  gap: 6px;
+
+  button {
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 8px;
+    color: #94a3b8;
+    background: #f8fafc;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+
+    &.active {
+      color: #f59e0b;
+      background: #fff7ed;
+    }
+  }
+}
+
+.existing-vote {
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 12px;
+  color: #92400e;
+  background: #fffbeb;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.primary-action {
+  min-height: 42px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  background: #2563eb;
+  font-weight: 900;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: progress;
+    opacity: 0.7;
+  }
+}
+
 @media (max-width: 1100px) {
   .annotation-workspace,
   .annotation-filters {
@@ -125,5 +360,9 @@
   .annotation-side-panel {
     border-left: 0;
     border-top: 1px solid #dfe7f3;
+  }
+
+  .rating-summary {
+    grid-template-columns: 1fr;
   }
 }

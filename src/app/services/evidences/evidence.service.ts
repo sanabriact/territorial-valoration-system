@@ -18,6 +18,10 @@ export class EvidenceService {
       .pipe(map((response) => this.toCollection(response)));
   }
 
+  getById(id: number): Observable<Evidence> {
+    return this.http.get<Evidence>(`${this.apiUrl}/${id}`);
+  }
+
   search(query: string): Observable<Evidence[]> {
     const params = new HttpParams().set('q', query);
     return this.http
@@ -25,7 +29,27 @@ export class EvidenceService {
       .pipe(map((response) => this.toCollection(response)));
   }
 
+  getByAnnotation(annotationId: number): Observable<Evidence[]> {
+    return this.getAll().pipe(
+      map((evidences) =>
+        evidences.filter((evidence) => Number(evidence.id_annotation) === Number(annotationId)),
+      ),
+    );
+  }
+
   create(request: EvidenceRequest): Observable<Evidence> {
+    return this.http.post<Evidence>(this.apiUrl, this.toFormData(request));
+  }
+
+  update(id: number, request: EvidenceRequest): Observable<Evidence> {
+    return this.http.put<Evidence>(`${this.apiUrl}/${id}`, this.toFormData(request));
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  private toFormData(request: EvidenceRequest): FormData {
     const formData = new FormData();
     formData.append('id_annotation', String(request.id_annotation));
     formData.append('file_url', request.file_url);
@@ -36,7 +60,7 @@ export class EvidenceService {
       formData.append('file', request.file);
     }
 
-    return this.http.post<Evidence>(this.apiUrl, formData);
+    return formData;
   }
 
   private toCollection<T>(response: CollectionResponse<T>): T[] {
