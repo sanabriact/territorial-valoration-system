@@ -21,7 +21,6 @@ import { MapCoordinates } from '../../../../models/interfaces/maps/MapLocation';
 import { AnnotationMapSelection, AnnotationMarker, NeighborhoodPolygon } from '../models/annotation-map.model';
 
 export class AnnotationMapController {
-  private readonly communePolygonSource = new VectorSource();
   private readonly polygonSource = new VectorSource();
   private readonly markerSource = new VectorSource();
   private readonly map: OlMap;
@@ -36,19 +35,14 @@ export class AnnotationMapController {
       layers: [
         new TileLayer({ source: new OSM() }),
         new VectorLayer({
-          source: this.communePolygonSource,
-          style: this.getCommunePolygonStyle(),
-          zIndex: 1,
-        }),
-        new VectorLayer({
           source: this.polygonSource,
           style: this.getPolygonStyle(),
-          zIndex: 2,
+          zIndex: 1,
         }),
         new VectorLayer({
           source: this.markerSource,
           style: (feature) => this.getMarkerStyle(feature.get('label') ?? ''),
-          zIndex: 3,
+          zIndex: 2,
         }),
       ],
       view: new View({
@@ -75,30 +69,6 @@ export class AnnotationMapController {
     this.onSelection = callback;
   }
 
-  setCommunePolygons(polygons: NeighborhoodPolygon[]): void {
-    this.communePolygonSource.clear();
-
-    const polygonCoordinates = polygons
-      .filter((polygon) => polygon.points.length >= 3)
-      .map((polygon) => {
-        const coordinates = polygon.points.map((point) => fromLonLat([point.longitude, point.latitude]));
-        this.communePolygonSource.addFeature(new Feature({
-          geometry: new Polygon([[...coordinates, coordinates[0]]]),
-          name: polygon.name,
-        }));
-        return coordinates;
-      })
-      .flat();
-
-    if (polygonCoordinates.length === 0) return;
-
-    this.map.getView().fit(boundingExtent(polygonCoordinates), {
-      padding: [70, 70, 70, 70],
-      duration: 350,
-      maxZoom: 14,
-    });
-  }
-
   setPolygon(polygon: NeighborhoodPolygon | null): void {
     this.polygonSource.clear();
     this.polygonFeature = null;
@@ -112,11 +82,21 @@ export class AnnotationMapController {
     });
     this.polygonSource.addFeature(this.polygonFeature);
 
+    this.map.updateSize();
     this.map.getView().fit(boundingExtent(coordinates), {
       padding: [70, 70, 70, 70],
       duration: 350,
       maxZoom: 15,
     });
+
+    setTimeout(() => {
+      this.map.updateSize();
+      this.map.getView().fit(boundingExtent(coordinates), {
+        padding: [70, 70, 70, 70],
+        duration: 0,
+        maxZoom: 15,
+      });
+    }, 100);
   }
 
   setSavedMarkers(markers: AnnotationMarker[]): void {
@@ -135,7 +115,6 @@ export class AnnotationMapController {
 
   destroy(): void {
     if (this.clickKey) unByKey(this.clickKey);
-    this.communePolygonSource.clear();
     this.polygonSource.clear();
     this.markerSource.clear();
     this.map.setTarget(undefined as any);
@@ -156,13 +135,6 @@ export class AnnotationMapController {
     return new Style({
       fill: new Fill({ color: 'rgba(37, 99, 235, 0.14)' }),
       stroke: new Stroke({ color: '#2563eb', width: 2.5 }),
-    });
-  }
-
-  private getCommunePolygonStyle(): Style {
-    return new Style({
-      fill: new Fill({ color: 'rgba(16, 185, 129, 0.08)' }),
-      stroke: new Stroke({ color: '#0f766e', width: 1.8 }),
     });
   }
 

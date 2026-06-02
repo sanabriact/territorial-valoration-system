@@ -12,6 +12,8 @@ export interface AnnotationMarker {
 }
 
 export interface NeighborhoodPolygon {
+  id: number;
+  version: string;
   name: string;
   points: PolygonPoint[];
 }

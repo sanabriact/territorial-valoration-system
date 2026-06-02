@@ -1,3 +1,5 @@
+import { Point } from './Point';
+
 export type NeighborhoodStatus = 'active' | 'inactive';
 
 export interface Neighborhood {
@@ -17,15 +19,7 @@ export interface NeighborhoodFormValue {
 
 export type NeighborhoodRequest = Omit<Neighborhood, 'id_neighborhood' | 'commune'>;
 
-export interface NeighborhoodPoint {
-  id_point: number;
-  id_neighborhood: number;
-  id_annotation: number;
-  latitude: number;
-  longitude: number;
-  order: number;
-  point_type: string;
-}
+export type NeighborhoodPoint = Point & { id_point: number };
 
 export interface NeighborhoodAnnotation {
   id_annotation: number;

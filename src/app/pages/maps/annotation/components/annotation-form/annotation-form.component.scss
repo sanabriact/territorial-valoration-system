@@ -125,25 +125,52 @@
 
 .annotation-categories {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+}
 
-  button {
-    min-height: 42px;
-    border: 1px solid #d5deef;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #243354;
-    cursor: pointer;
-    font-size: 0.76rem;
-    font-weight: 800;
+.annotation-category-card {
+  display: flex;
+  min-height: 78px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #d5deef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #243354;
+  cursor: pointer;
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1.15;
+  text-align: center;
+
+  iconify-icon {
+    color: #2563eb;
+    font-size: 1.55rem;
   }
 
-  .annotation-category--active {
-    border-color: #2563eb;
-    background: #eff6ff;
-    color: #1d4ed8;
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
   }
+
+  span {
+    display: -webkit-box;
+    min-height: 24px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.annotation-category-card--active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
 
 .annotation-dropzone {

@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Category } from '../../../../../models/Category';
 import { Entity } from '../../../../../models/Entity';
+import { resolveCategoryImageUrl } from '../../../../../utils/category-image-url';
 import { AnnotationFormValue } from '../../models/annotation-map.model';
 
 @Component({
@@ -11,6 +12,7 @@ import { AnnotationFormValue } from '../../models/annotation-map.model';
   imports: [CommonModule, FormsModule],
   templateUrl: './annotation-form.component.html',
   styleUrl: './annotation-form.component.scss',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AnnotationFormComponent {
   readonly latitude = input.required<number>();
@@ -27,6 +29,7 @@ export class AnnotationFormComponent {
   readonly entityIds = signal<number[]>([]);
   readonly files = signal<File[]>([]);
   readonly categoryQuery = signal('');
+  readonly brokenCategoryImageIds = signal<Set<number>>(new Set<number>());
 
   readonly filteredCategories = computed(() => {
     const query = this.categoryQuery().trim().toLowerCase();
@@ -61,6 +64,39 @@ export class AnnotationFormComponent {
     this.categoryIds.update((ids) =>
       ids.includes(categoryId) ? ids.filter((id) => id !== categoryId) : [...ids, categoryId],
     );
+  }
+
+  hasCategoryImage(category: Category): boolean {
+    return Boolean(category.image_url) && !this.brokenCategoryImageIds().has(category.id_category);
+  }
+
+  resolveCategoryImage(category: Category): string {
+    return resolveCategoryImageUrl(category.image_url);
+  }
+
+  onCategoryImageError(categoryId: number): void {
+    this.brokenCategoryImageIds.update((ids) => new Set(ids).add(categoryId));
+  }
+
+  getCategoryIcon(category: Category): string {
+    const name = category.name.toLowerCase();
+
+    if (name.includes('seguridad')) return 'solar:shield-bold';
+    if (name.includes('infraestructura')) return 'solar:buildings-2-bold';
+    if (name.includes('via') || name.includes('tránsito') || name.includes('transito')) return 'solar:streets-map-point-bold';
+    if (name.includes('servicio')) return 'solar:plug-bold';
+    if (name.includes('ambiente') || name.includes('medio')) return 'solar:leaf-bold';
+    if (name.includes('publico') || name.includes('público')) return 'solar:bus-bold';
+    if (name.includes('residuo') || name.includes('basura')) return 'solar:trash-bin-trash-bold';
+    if (name.includes('salud')) return 'solar:health-bold';
+    if (name.includes('educacion') || name.includes('educación')) return 'solar:square-academic-cap-bold';
+    if (name.includes('movilidad')) return 'solar:bus-bold';
+    if (name.includes('riesgo')) return 'solar:danger-triangle-bold';
+    if (name.includes('ruido')) return 'solar:volume-loud-bold';
+    if (name.includes('alumbrado')) return 'solar:lightbulb-bold';
+    if (name.includes('comercio')) return 'solar:shop-bold';
+
+    return 'solar:menu-dots-circle-bold';
   }
 
   onEntityChange(event: Event): void {

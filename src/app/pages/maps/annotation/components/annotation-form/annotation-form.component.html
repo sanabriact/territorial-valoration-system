@@ -51,9 +51,18 @@
       @for(category of filteredCategories(); track category.id_category) {
         <button
           type="button"
-          [class.annotation-category--active]="categoryIds().includes(category.id_category)"
+          class="annotation-category-card"
+          [class.annotation-category-card--active]="categoryIds().includes(category.id_category)"
           (click)="toggleCategory(category.id_category)">
-          {{ category.name }}
+          @if(hasCategoryImage(category)) {
+            <img
+              [src]="resolveCategoryImage(category)"
+              [alt]="category.name"
+              (error)="onCategoryImageError(category.id_category)">
+          } @else {
+            <iconify-icon [icon]="getCategoryIcon(category)"></iconify-icon>
+          }
+          <span>{{ category.name }}</span>
         </button>
       }
     </div>

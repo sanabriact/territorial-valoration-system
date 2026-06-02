@@ -16,15 +16,22 @@ export class AnnotationMapComponent implements AfterViewInit, OnDestroy {
   private readonly mapTarget = viewChild.required<ElementRef<HTMLDivElement>>('mapTarget');
 
   readonly polygon = input<NeighborhoodPolygon | null>(null);
-  readonly communePolygons = input<NeighborhoodPolygon[]>([]);
   readonly savedMarkers = input<AnnotationMarker[]>([]);
   readonly locationSelected = output<AnnotationMapSelection>();
 
   private controller: AnnotationMapController | null = null;
+  private renderedPolygonVersion = '';
 
   constructor() {
-    effect(() => this.controller?.setCommunePolygons(this.communePolygons()));
-    effect(() => this.controller?.setPolygon(this.polygon()));
+    effect(() => {
+      const polygon = this.polygon();
+      const version = polygon?.version ?? '';
+
+      if (!this.controller || version === this.renderedPolygonVersion) return;
+
+      this.renderedPolygonVersion = version;
+      this.controller.setPolygon(polygon);
+    });
     effect(() => this.controller?.setSavedMarkers(this.savedMarkers()));
   }
 
@@ -35,7 +42,7 @@ export class AnnotationMapComponent implements AfterViewInit, OnDestroy {
       13,
     );
     this.controller.onLocationSelected((selection) => this.locationSelected.emit(selection));
-    this.controller.setCommunePolygons(this.communePolygons());
+    this.renderedPolygonVersion = this.polygon()?.version ?? '';
     this.controller.setPolygon(this.polygon());
     this.controller.setSavedMarkers(this.savedMarkers());
   }

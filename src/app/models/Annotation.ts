@@ -26,3 +26,11 @@ export interface InterestedPartyRequest {
   id_entity: number;
   id_annotation: number;
 }
+
+export interface AnnotationCategory extends AnnotationCategoryRequest {
+  id_annotation_category?: number;
+}
+
+export interface InterestedParty extends InterestedPartyRequest {
+  id_interested_party?: number;
+}

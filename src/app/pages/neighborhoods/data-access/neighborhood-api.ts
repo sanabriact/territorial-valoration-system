@@ -11,6 +11,7 @@ import {
   NeighborhoodRequest,
 } from '../../../models/Neighborhood';
 import { Commune } from '../../../models/Commune';
+import { PointService } from '../../../services/points/point.service';
 
 type CollectionResponse<T> = T[] | { data?: T[]; items?: T[] };
 
@@ -78,20 +79,18 @@ export class NeighborhoodApi {
 @Injectable()
 export class NeighborhoodDependencyApi {
   private readonly http = inject(HttpClient);
-  private readonly pointsUrl = `${environment.apiUrl}/points`;
+  private readonly pointService = inject(PointService);
   private readonly annotationsUrl = `${environment.apiUrl}/annotations`;
 
   findByNeighborhood(neighborhoodId: number): Observable<NeighborhoodDependencies> {
     return forkJoin({
-      points: this.http
-        .get<CollectionResponse<NeighborhoodPoint>>(this.pointsUrl)
-        .pipe(map((response) => this.toCollection(response))),
+      points: this.pointService.getByNeighborhood(neighborhoodId) as Observable<NeighborhoodPoint[]>,
       annotations: this.http
         .get<CollectionResponse<NeighborhoodAnnotation>>(this.annotationsUrl)
         .pipe(map((response) => this.toCollection(response))),
     }).pipe(
       map(({ points, annotations }) => ({
-        points: points.filter((point) => Number(point.id_neighborhood) === Number(neighborhoodId)),
+        points,
         annotations: annotations.filter(
           (annotation) => Number(annotation.id_neighborhood) === Number(neighborhoodId),
         ),

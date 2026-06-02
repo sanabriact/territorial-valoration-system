@@ -7,13 +7,13 @@ import { Category } from '../../../models/Category';
 import { Commune } from '../../../models/Commune';
 import { Entity } from '../../../models/Entity';
 import { Neighborhood } from '../../../models/Neighborhood';
-import { DemarcationPoint } from '../../../models/interfaces/demarcation/demarcation';
+import { Point } from '../../../models/Point';
 import { AnnotationService } from '../../../services/annotations/annotation.service';
 import { CategoryService } from '../../../services/categories/category.service';
 import { CommuneService } from '../../../services/communes/commune.service';
-import { DemarcationService } from '../../../services/demarcation/demarcation.service';
 import { EntityService } from '../../../services/entities/entities.service';
 import { NeighborhoodService } from '../../../services/neighborhoods/neighborhood.service';
+import { PointService } from '../../../services/points/point.service';
 import { AnnotationFormComponent } from './components/annotation-form/annotation-form.component';
 import { AnnotationMapComponent } from './components/annotation-map/annotation-map.component';
 import {
@@ -29,14 +29,13 @@ import {
   imports: [CommonModule, FormsModule, AnnotationMapComponent, AnnotationFormComponent],
   templateUrl: './annotation.component.html',
   styleUrl: './annotation.component.scss',
-  providers: [DemarcationService],
 })
 export class AnnotationComponent implements OnInit {
   private readonly communeService = inject(CommuneService);
   private readonly neighborhoodService = inject(NeighborhoodService);
   private readonly categoryService = inject(CategoryService);
   private readonly entityService = inject(EntityService);
-  private readonly demarcationService = inject(DemarcationService);
+  private readonly pointService = inject(PointService);
   private readonly annotationService = inject(AnnotationService);
 
   readonly loading = signal(false);
@@ -48,42 +47,41 @@ export class AnnotationComponent implements OnInit {
   readonly selectedCommuneId = signal<number | null>(null);
   readonly selectedNeighborhoodId = signal<number | null>(null);
   readonly selectedCategoryFilter = signal<number | null>(null);
-  readonly demarcationPoints = signal<DemarcationPoint[]>([]);
+  readonly points = signal<Point[]>([]);
   readonly selectedLocation = signal<AnnotationMapSelection | null>(null);
   readonly savedMarkers = signal<AnnotationMarker[]>([]);
 
   readonly filteredNeighborhoods = computed(() => {
     const communeId = this.selectedCommuneId();
     return this.neighborhoods().filter((neighborhood) =>
-      communeId === null ? true : neighborhood.id_commune === communeId,
+      communeId === null ? true : Number(neighborhood.id_commune) === Number(communeId),
     );
   });
 
   readonly selectedNeighborhood = computed(() => {
     const neighborhoodId = this.selectedNeighborhoodId();
-    return this.neighborhoods().find((item) => item.id_neighborhood === neighborhoodId) ?? null;
+    return this.neighborhoods().find((item) =>
+      Number(item.id_neighborhood) === Number(neighborhoodId),
+    ) ?? null;
   });
 
   readonly selectedPolygon = computed<NeighborhoodPolygon | null>(() => {
     const neighborhood = this.selectedNeighborhood();
-    const points = this.getOrderedPolygonPoints(neighborhood?.id_neighborhood ?? null);
-
-    if (!neighborhood || points.length < 3) return null;
-    return { name: neighborhood.name, points };
-  });
-
-  readonly communePolygons = computed<NeighborhoodPolygon[]>(() => {
-    const communeId = this.selectedCommuneId();
-    const neighborhoods = this.neighborhoods().filter((neighborhood) =>
-      communeId === null ? true : neighborhood.id_commune === communeId,
+    const neighborhoodId = this.selectedNeighborhoodId();
+    const points = this.toOrderedCoordinates(
+      this.points().filter((point) =>
+        Number(point.id_neighborhood) === Number(neighborhoodId) &&
+        String(point.point_type).trim().toLowerCase() === 'demarcation',
+      ),
     );
 
-    return neighborhoods
-      .map((neighborhood) => ({
-        name: neighborhood.name,
-        points: this.getOrderedPolygonPoints(neighborhood.id_neighborhood),
-      }))
-      .filter((polygon) => polygon.points.length >= 3);
+    if (!neighborhood || points.length < 3) return null;
+    return {
+      id: Number(neighborhood.id_neighborhood),
+      version: `${neighborhood.id_neighborhood}:${points.map((point) => `${point.latitude},${point.longitude}`).join('|')}`,
+      name: neighborhood.name,
+      points,
+    };
   });
 
   ngOnInit(): void {
@@ -93,7 +91,9 @@ export class AnnotationComponent implements OnInit {
   onCommuneChange(value: string): void {
     const communeId = value ? Number(value) : null;
     this.selectedCommuneId.set(communeId);
-    const firstNeighborhood = this.neighborhoods().find((item) => item.id_commune === communeId);
+    const firstNeighborhood = this.neighborhoods().find((item) =>
+      Number(item.id_commune) === Number(communeId),
+    );
     this.selectNeighborhood(firstNeighborhood?.id_neighborhood ?? null);
   }
 
@@ -101,10 +101,6 @@ export class AnnotationComponent implements OnInit {
     const neighborhoodId = value ? Number(value) : null;
     this.selectedNeighborhoodId.set(neighborhoodId);
     this.selectedLocation.set(null);
-
-    if (!neighborhoodId) {
-      return;
-    }
   }
 
   async onMapSelection(selection: AnnotationMapSelection): Promise<void> {
@@ -181,33 +177,33 @@ export class AnnotationComponent implements OnInit {
       neighborhoods: this.neighborhoodService.getAll(),
       categories: this.categoryService.getAll(),
       entities: this.entityService.getAll(),
-      demarcationPoints: this.demarcationService.getAll(),
+      points: this.pointService.getAll(),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: ({ communes, neighborhoods, categories, entities, demarcationPoints }) => {
+        next: ({ communes, neighborhoods, categories, entities, points }) => {
           this.communes.set(communes);
           this.neighborhoods.set(neighborhoods);
           this.categories.set(categories);
           this.entities.set(entities);
-          this.demarcationPoints.set(demarcationPoints);
+          this.points.set(points);
 
           const firstCommune = communes[0] ?? null;
           this.selectedCommuneId.set(firstCommune?.id_commune ?? null);
-          const firstNeighborhood = neighborhoods.find((item) => item.id_commune === firstCommune?.id_commune) ?? neighborhoods[0];
+          const firstNeighborhood = neighborhoods.find((item) =>
+            Number(item.id_commune) === Number(firstCommune?.id_commune),
+          ) ?? neighborhoods[0];
           this.selectNeighborhood(firstNeighborhood?.id_neighborhood ?? null);
         },
         error: () => void Swal.fire('Error', 'No se pudo cargar la informacion inicial.', 'error'),
       });
   }
 
-  private getOrderedPolygonPoints(neighborhoodId: number | null): { latitude: number; longitude: number }[] {
-    if (!neighborhoodId) return [];
-
-    return this.demarcationPoints()
-      .filter((point) => Number(point.id_neighborhood) === Number(neighborhoodId))
+  private toOrderedCoordinates(points: Point[]): { latitude: number; longitude: number }[] {
+    return points
       .slice()
-      .sort((a, b) => a.order - b.order)
-      .map((point) => ({ latitude: Number(point.latitude), longitude: Number(point.longitude) }));
+      .sort((a, b) => Number(a.order) - Number(b.order))
+      .map((point) => ({ latitude: Number(point.latitude), longitude: Number(point.longitude) }))
+      .filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
   }
 }

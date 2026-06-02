@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { environment } from '../../../../../environments/environments';
 import { Category, CategoryFormValue, CategoryStatus } from '../../../../models/Category';
+import { resolveCategoryImageUrl } from '../../../../utils/category-image-url';
 
 export type CategoryFormMode = 'create' | 'edit';
 
@@ -114,20 +114,6 @@ export class CategoryFormComponent {
   }
 
   private resolveImageSrc(imageUrl: string | null | undefined): string {
-    if (!imageUrl) return 'imagen_por_defecto.png';
-
-    if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
-      return imageUrl;
-    }
-
-    if (imageUrl.startsWith('/api/')) {
-      return imageUrl;
-    }
-
-    if (imageUrl.startsWith('/')) {
-      return `${environment.apiUrl}/images${imageUrl}`;
-    }
-
-    return imageUrl;
+    return resolveCategoryImageUrl(imageUrl);
   }
 }

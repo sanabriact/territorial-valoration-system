@@ -43,7 +43,6 @@
         <div class="annotation-loading">Cargando mapa...</div>
       } @else {
         <app-annotation-map
-          [communePolygons]="communePolygons()"
           [polygon]="selectedPolygon()"
           [savedMarkers]="savedMarkers()"
           (locationSelected)="onMapSelection($event)">

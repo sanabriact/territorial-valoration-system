@@ -8,15 +8,16 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize, forkJoin } from 'rxjs';
+import { Observable, finalize, forkJoin } from 'rxjs';
 import Swal from 'sweetalert2';
 import { DemarcationMapComponent } from './demarcation-map.component';
-import { DemarcationService } from '../../../services/demarcation/demarcation.service';
 import { DemarcationMode, PolygonPoint } from '../../../models/interfaces/demarcation/demarcation';
 import { Neighborhood } from '../../../models/Neighborhood';
 import { Commune } from '../../../models/Commune';
+import { Point } from '../../../models/Point';
 import { CommuneService } from '../../../services/communes/commune.service';
 import { NeighborhoodService } from '../../../services/neighborhoods/neighborhood.service';
+import { PointService } from '../../../services/points/point.service';
 
 interface NeighborhoodListEntry extends Neighborhood {
   communeName: string;
@@ -28,10 +29,10 @@ interface NeighborhoodListEntry extends Neighborhood {
   imports: [CommonModule, FormsModule, DemarcationMapComponent],
   templateUrl: './demarcation.component.html',
   styleUrl: './demarcation.component.scss',
-  providers: [DemarcationService, CommuneService, NeighborhoodService],
+  providers: [CommuneService, NeighborhoodService],
 })
 export class DemarcationComponent implements OnInit {
-  private readonly demarcationService = inject(DemarcationService);
+  private readonly pointService = inject(PointService);
   private readonly communeApi = inject(CommuneService);
   private readonly neighborhoodApi = inject(NeighborhoodService);
 
@@ -118,31 +119,9 @@ export class DemarcationComponent implements OnInit {
 
     this.saving.set(true);
 
-    // 1. Obtener todos los puntos existentes para este barrio
-    this.demarcationService.getAll().pipe(
-      finalize(() => {}),
-    ).subscribe({
-      next: (existingAll) => {
-        const toDelete = existingAll
-          .filter((p) => Number(p.id_neighborhood) === Number(neighborhood.id_neighborhood))
-          .map((p) => p.id_point!)
-          .filter((id) => id != null && id > 0);
-
-        if (toDelete.length > 0) {
-          // 2a. Eliminar los puntos existentes, luego crear los nuevos
-          this.demarcationService.deleteMany(toDelete).pipe(
-            finalize(() => {}),
-          ).subscribe({
-            next: () => this.createPoints(pts, neighborhood),
-            error: () => {
-              this.saving.set(false);
-              void Swal.fire('Error', 'No se pudieron eliminar los puntos anteriores.', 'error');
-            },
-          });
-        } else {
-          // 2b. No hay puntos previos, crear directamente
-          this.createPoints(pts, neighborhood);
-        }
+    this.pointService.getByNeighborhood(neighborhood.id_neighborhood).subscribe({
+      next: (existingPoints) => {
+        this.persistPoints(existingPoints, pts, neighborhood);
       },
       error: () => {
         this.saving.set(false);
@@ -160,19 +139,10 @@ export class DemarcationComponent implements OnInit {
 
   // ── Private ───────────────────────────────────────────────────────────────
 
-  private createPoints(pts: PolygonPoint[], neighborhood: NeighborhoodListEntry): void {
-    const creates = pts.map((pt, idx) =>
-      this.demarcationService.create({
-        id_neighborhood: neighborhood.id_neighborhood,
-        id_annotation: null,
-        latitude: pt.latitude,
-        longitude: pt.longitude,
-        order: idx + 1,
-        point_type: 'demarcation',
-      }),
-    );
+  private persistPoints(existingPoints: Point[], points: PolygonPoint[], neighborhood: NeighborhoodListEntry): void {
+    const requests = this.buildPointRequests(existingPoints, points, neighborhood);
 
-    forkJoin(creates).pipe(
+    forkJoin(requests).pipe(
       finalize(() => this.saving.set(false)),
     ).subscribe({
       next: () => {
@@ -187,6 +157,37 @@ export class DemarcationComponent implements OnInit {
         void Swal.fire('Error', 'No se pudo guardar el polígono.', 'error');
       },
     });
+  }
+
+  private buildPointRequests(
+    existingPoints: Point[],
+    points: PolygonPoint[],
+    neighborhood: NeighborhoodListEntry,
+  ): Observable<unknown>[] {
+    const sortedExistingPoints = existingPoints.slice().sort((a, b) => a.order - b.order);
+    const upserts = points.map((point, index) => {
+      const existingPoint = sortedExistingPoints[index];
+      const request = {
+        id_neighborhood: neighborhood.id_neighborhood,
+        id_annotation: existingPoint?.id_annotation ?? null,
+        latitude: point.latitude,
+        longitude: point.longitude,
+        order: index + 1,
+        point_type: existingPoint?.point_type ?? 'demarcation',
+      };
+
+      return existingPoint?.id_point
+        ? this.pointService.update(existingPoint.id_point, request)
+        : this.pointService.create(request);
+    });
+
+    const deletes = sortedExistingPoints
+      .slice(points.length)
+      .map((point) => point.id_point)
+      .filter((id): id is number => id != null && id > 0)
+      .map((id) => this.pointService.delete(id));
+
+    return [...upserts, ...deletes];
   }
 
   private loadInitialData(): void {
@@ -206,10 +207,9 @@ export class DemarcationComponent implements OnInit {
   }
 
   private loadNeighborhoodPoints(neighborhoodId: number): void {
-    this.demarcationService.getAll().subscribe({
-      next: (all) => {
-        const pts = all
-          .filter((p) => Number(p.id_neighborhood) === Number(neighborhoodId))
+    this.pointService.getByNeighborhood(neighborhoodId).subscribe({
+      next: (points) => {
+        const pts = points
           .sort((a, b) => a.order - b.order)
           .map((p) => ({ latitude: Number(p.latitude), longitude: Number(p.longitude) }));
         this.existingPoints.set(pts);
