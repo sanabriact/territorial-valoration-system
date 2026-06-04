@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { roleGuard } from '../../../guards/role.guard';
 
 export const annotationRoutes: Routes = [
   {
@@ -10,4 +11,17 @@ export const annotationRoutes: Routes = [
       subtitle: 'Haz clic en el mapa para agregar una anotacion en el territorio.',
     },
   },
+  {
+        path: 'map/annotations',
+        canActivate: [roleGuard],
+        loadComponent: () =>
+            import('../citizen-map/citizen-map.component').then(
+                (module) => module.CitizenMapComponent,
+            ),
+        data: {
+            title: 'Mapa de anotaciones',
+            subtitle: 'Explora y filtra anotaciones ciudadanas por categoría y territorio.',
+            roles: ['ADMIN', 'FUNCIONARIO'],
+        },
+    },
 ];
