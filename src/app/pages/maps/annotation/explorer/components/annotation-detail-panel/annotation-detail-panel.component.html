@@ -1,0 +1,59 @@
+<aside class="detail-panel">
+  @if(item(); as selected) {
+    <header>
+      <h2>Detalle de la anotacion</h2>
+      <button type="button" (click)="closePanel.emit()">x</button>
+    </header>
+
+    <div class="detail-chip">
+      {{ selected.categories[0]?.name || 'Sin categoria' }}
+    </div>
+
+    <h3>{{ selected.annotation.description | slice:0:36 }}</h3>
+    <div class="detail-location">
+      <span>{{ selected.neighborhoodName }}, {{ selected.communeName }}</span>
+      <span>{{ selected.annotation.latitude | number:'1.5-5' }}, {{ selected.annotation.longitude | number:'1.5-5' }}</span>
+    </div>
+
+    <p class="detail-description">{{ selected.annotation.description }}</p>
+
+    <section>
+      <h4>Informacion</h4>
+      <dl>
+        <dt>Categoria</dt>
+        <dd>{{ selected.categories[0]?.name || 'Sin categoria' }}</dd>
+        <dt>Subcategorias</dt>
+        <dd>{{ selected.categories.slice(1).length || 'Sin subcategoria' }}</dd>
+        <dt>Estado</dt>
+        <dd>{{ selected.annotation.status }}</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h4>Evidencias ({{ selected.evidences.length }})</h4>
+      <div class="detail-evidences">
+        @for(evidence of selected.evidences.slice(0, 3); track evidence.id_evidence) {
+          <img [src]="getEvidenceUrl(evidence.file_url)" alt="Evidencia">
+        }
+      </div>
+    </section>
+
+    <section>
+      <h4>Calificacion promedio</h4>
+      <div class="detail-rating">
+        <strong>{{ selected.averageRating | number:'1.1-1' }}</strong>
+        <span>
+          @for(star of stars(selected.averageRating); track $index) {
+            <i [class.detail-star--active]="star === 1">★</i>
+          }
+        </span>
+        <small>({{ selected.votes.length }} calificaciones)</small>
+      </div>
+    </section>
+  } @else {
+    <div class="detail-empty">
+      <h2>Detalle de la anotacion</h2>
+      <p>Selecciona un marcador para consultar la informacion.</p>
+    </div>
+  }
+</aside>

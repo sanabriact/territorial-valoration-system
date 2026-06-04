@@ -1,0 +1,51 @@
+<aside class="filter-panel">
+  <header>
+    <div>
+      <h2>Filtros</h2>
+      <strong>Categorias</strong>
+    </div>
+    <button type="button" (click)="closePanel.emit()">x</button>
+  </header>
+
+  <div class="filter-actions">
+    <span>Selecciona una o varias categorias y subcategorias</span>
+    <button type="button" (click)="clearFilters.emit()">Limpiar filtros</button>
+  </div>
+
+  <div class="filter-tree">
+    @for(category of tree(); track category.id_category) {
+      <div class="filter-node">
+        <label>
+          <input
+            type="checkbox"
+            [checked]="isSelected(category.id_category)"
+            (change)="toggleCategory.emit(category.id_category)">
+          <span>{{ category.name }}</span>
+          <em>{{ category.annotationCount }}</em>
+        </label>
+
+        @if(category.children.length > 0) {
+          <div class="filter-children">
+            @for(child of category.children; track child.id_category) {
+              <label>
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(child.id_category)"
+                  (change)="toggleCategory.emit(child.id_category)">
+                <span>{{ child.name }}</span>
+                <em>{{ child.annotationCount }}</em>
+              </label>
+            }
+          </div>
+        } @else {
+          <small>Sin subcategorias</small>
+        }
+      </div>
+    }
+  </div>
+
+  <footer>
+    <strong>Mostrando {{ visibleCount() }} anotaciones</strong>
+    <span>Filtros aplicados en tiempo real</span>
+  </footer>
+</aside>

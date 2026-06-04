@@ -1,0 +1,75 @@
+<section class="annotations-page">
+  <div class="annotations-toolbar">
+    <label>
+      <span>Comuna</span>
+      <select [ngModel]="selectedCommuneId()" (ngModelChange)="onCommuneChange($event)">
+        <option [ngValue]="null">Todas</option>
+        @for(commune of communes(); track commune.id_commune) {
+          <option [ngValue]="commune.id_commune">{{ commune.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      <span>Barrio</span>
+      <select [ngModel]="selectedNeighborhoodId()" (ngModelChange)="selectedNeighborhoodId.set($event)">
+        <option [ngValue]="null">Todos</option>
+        @for(neighborhood of filteredNeighborhoods(); track neighborhood.id_neighborhood) {
+          <option [ngValue]="neighborhood.id_neighborhood">{{ neighborhood.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      <span>Buscar</span>
+      <input
+        type="text"
+        placeholder="Buscar en el mapa"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)">
+    </label>
+
+    <button type="button" class="annotations-mode-btn" [class.annotations-mode-btn--active]="showFilters()" (click)="showFilters.set(!showFilters())">
+      Marcadores
+    </button>
+  </div>
+
+  <div class="annotations-workspace" [class.annotations-workspace--filters]="showFilters()">
+    <div class="annotations-map-area">
+      @if(loading()) {
+        <div class="annotations-empty">Cargando anotaciones...</div>
+      } @else {
+        <app-annotations-map
+          [polygon]="selectedPolygon()"
+          [markers]="markers()"
+          (annotationSelected)="selectAnnotation($event)">
+        </app-annotations-map>
+      }
+
+      @if(!loading() && filteredItems().length === 0) {
+        <div class="annotations-empty">No hay registros para los filtros seleccionados.</div>
+      }
+
+      <div class="annotations-legend">
+        <strong>Mostrando {{ filteredItems().length }} anotaciones</strong>
+        <span>Selecciona un marcador para ver el detalle.</span>
+      </div>
+    </div>
+
+    @if(showFilters()) {
+      <app-annotation-filter-panel
+        [tree]="categoryTree()"
+        [selectedCategoryIds]="selectedCategoryIds()"
+        [visibleCount]="filteredItems().length"
+        (toggleCategory)="toggleCategory($event)"
+        (clearFilters)="clearFilters()"
+        (closePanel)="showFilters.set(false)">
+      </app-annotation-filter-panel>
+    }
+
+    <app-annotation-detail-panel
+      [item]="selectedItem()"
+      (closePanel)="selectedAnnotationId.set(null)">
+    </app-annotation-detail-panel>
+  </div>
+</section>

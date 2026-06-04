@@ -1,0 +1,124 @@
+:host {
+  display: block;
+}
+
+.annotations-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 154px);
+  gap: 12px;
+}
+
+.annotations-toolbar {
+  display: grid;
+  grid-template-columns: 190px 190px minmax(220px, 1fr) auto;
+  gap: 16px;
+  align-items: end;
+  padding: 16px;
+  border: 1px solid #dfe7f3;
+  border-radius: 8px;
+  background: #ffffff;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  span {
+    color: #45526c;
+    font-size: 0.76rem;
+    font-weight: 900;
+  }
+
+  select,
+  input {
+    height: 42px;
+    border: 1px solid #d6deec;
+    border-radius: 8px;
+    padding: 0 12px;
+    color: #172342;
+    outline: none;
+    background: #ffffff;
+  }
+}
+
+.annotations-mode-btn {
+  height: 42px;
+  border: 1px solid #bcd2ff;
+  border-radius: 8px;
+  padding: 0 18px;
+  background: #ffffff;
+  color: #2563eb;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.annotations-mode-btn--active {
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.annotations-workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  border: 1px solid #dfe7f3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.annotations-workspace--filters {
+  grid-template-columns: minmax(0, 1fr) 330px 360px;
+}
+
+.annotations-map-area {
+  position: relative;
+  min-height: 650px;
+  background: #edf3f7;
+}
+
+.annotations-empty {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  border: 1px solid #cfe0ff;
+  border-radius: 8px;
+  padding: 14px 18px;
+  background: #eff6ff;
+  color: #173d72;
+  font-weight: 900;
+}
+
+.annotations-legend {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 3;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #dfe7f3;
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 24px rgba(25, 40, 75, 0.12);
+  color: #34405f;
+  font-size: 0.78rem;
+  font-weight: 800;
+
+  span {
+    color: #64748b;
+  }
+}
+
+@media (max-width: 1180px) {
+  .annotations-toolbar,
+  .annotations-workspace,
+  .annotations-workspace--filters {
+    grid-template-columns: 1fr;
+  }
+}

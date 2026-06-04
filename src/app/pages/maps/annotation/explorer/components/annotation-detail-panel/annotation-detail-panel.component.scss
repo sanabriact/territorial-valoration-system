@@ -1,0 +1,146 @@
+.detail-panel {
+  width: 360px;
+  height: 100%;
+  padding: 22px;
+  border-left: 1px solid #dfe7f3;
+  background: #ffffff;
+  overflow: auto;
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    color: #121a3d;
+    font-weight: 900;
+  }
+
+  h2 {
+    font-size: 1.05rem;
+  }
+
+  h3 {
+    margin-top: 12px;
+    font-size: 1.15rem;
+  }
+
+  h4 {
+    font-size: 0.88rem;
+  }
+
+  button {
+    width: 32px;
+    height: 32px;
+    border: 0;
+    background: transparent;
+    color: #121a3d;
+    cursor: pointer;
+    font-weight: 900;
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e7edf6;
+  }
+}
+
+.detail-chip {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 18px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.detail-location {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  color: #58647b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.detail-description {
+  color: #34405f;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px 12px;
+  margin: 0;
+  color: #34405f;
+  font-size: 0.82rem;
+
+  dt {
+    font-weight: 900;
+  }
+}
+
+.detail-evidences {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+
+  img {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #e2e8f0;
+  }
+}
+
+.detail-rating {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  align-items: center;
+
+  strong {
+    color: #121a3d;
+    font-size: 1.8rem;
+  }
+
+  i {
+    color: #cbd5e1;
+    font-style: normal;
+    font-size: 1rem;
+  }
+
+  .detail-star--active {
+    color: #f59e0b;
+  }
+
+  small {
+    grid-column: 2;
+    color: #64748b;
+    font-weight: 700;
+  }
+}
+
+.detail-empty {
+  display: grid;
+  place-items: center;
+  min-height: 520px;
+  color: #64748b;
+  text-align: center;
+}
