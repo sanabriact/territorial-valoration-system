@@ -28,6 +28,7 @@ export class AnnotationMapController {
   private polygonFeature: Feature<Polygon> | null = null;
   private onSelection: ((selection: AnnotationMapSelection) => void) | null = null;
   private onAnnotationSelection: ((annotationId: number) => void) | null = null;
+  private freeSelectionEnabled = true;
 
   constructor(target: HTMLElement, center: MapCoordinates, zoom: number) {
     this.map = new OlMap({
@@ -66,6 +67,8 @@ export class AnnotationMapController {
         return;
       }
 
+      if (!this.freeSelectionEnabled) return;
+
       const [longitude, latitude] = toLonLat(event.coordinate);
       const insidePolygon = this.polygonFeature
         ? this.polygonFeature.getGeometry()?.intersectsCoordinate(event.coordinate) ?? false
@@ -85,6 +88,10 @@ export class AnnotationMapController {
 
   onAnnotationSelected(callback: (annotationId: number) => void): void {
     this.onAnnotationSelection = callback;
+  }
+
+  setFreeSelectionEnabled(enabled: boolean): void {
+    this.freeSelectionEnabled = enabled;
   }
 
   setPolygon(polygon: NeighborhoodPolygon | null): void {

@@ -8,6 +8,7 @@ import { neighborhoodsRoutes } from './neighborhoods/neighborhoods.routes';
 import { demarcationRoutes } from './maps/demarcation/demarcation.routes';
 import { followupRoutes } from './maps/followup/followup.routes';
 import { annotationRoutes } from './maps/annotation/annotation.routes';
+import { citizenMapRoutes } from './maps/citizen-map/citizen-map.routes';
 
 export const pagesRoutes: Routes = [
     {
@@ -24,5 +25,6 @@ export const pagesRoutes: Routes = [
     ...neighborhoodsRoutes,
     ...followupRoutes,
     ...demarcationRoutes,
-    ...annotationRoutes
+    ...annotationRoutes,
+    ...citizenMapRoutes
 ];

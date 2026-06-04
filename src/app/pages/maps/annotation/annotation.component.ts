@@ -4,24 +4,17 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { catchError, finalize, forkJoin, of, switchMap } from 'rxjs';
 import Swal from 'sweetalert2';
-import { Annotation } from '../../../models/Annotation';
 import { Category } from '../../../models/Category';
 import { Commune } from '../../../models/Commune';
 import { Entity } from '../../../models/Entity';
-import { Evidence } from '../../../models/Evidence';
 import { Neighborhood } from '../../../models/Neighborhood';
 import { Point } from '../../../models/Point';
-import { Vote } from '../../../models/Vote';
 import { AnnotationService } from '../../../services/annotations/annotation.service';
 import { CategoryService } from '../../../services/categories/category.service';
-import { CurrentCitizenService } from '../../../services/citizens/current-citizen.service';
 import { CommuneService } from '../../../services/communes/commune.service';
 import { EntityService } from '../../../services/entities/entities.service';
-import { EvidenceService } from '../../../services/evidences/evidence.service';
 import { NeighborhoodService } from '../../../services/neighborhoods/neighborhood.service';
 import { PointService } from '../../../services/points/point.service';
-import { VoteService } from '../../../services/votes/vote.service';
-import { resolveBackendFileUrl } from '../../../utils/file-url';
 import { AnnotationFormComponent } from './components/annotation-form/annotation-form.component';
 import { AnnotationMapComponent } from './components/annotation-map/annotation-map.component';
 import {
@@ -45,32 +38,19 @@ export class AnnotationComponent implements OnInit {
   private readonly entityService = inject(EntityService);
   private readonly pointService = inject(PointService);
   private readonly annotationService = inject(AnnotationService);
-  private readonly evidenceService = inject(EvidenceService);
-  private readonly voteService = inject(VoteService);
-  private readonly currentCitizenService = inject(CurrentCitizenService);
 
   readonly loading = signal(false);
   readonly saving = signal(false);
-  readonly detailLoading = signal(false);
-  readonly voteSaving = signal(false);
   readonly communes = signal<Commune[]>([]);
   readonly neighborhoods = signal<Neighborhood[]>([]);
   readonly categories = signal<Category[]>([]);
   readonly entities = signal<Entity[]>([]);
-  readonly annotations = signal<Annotation[]>([]);
-  readonly annotationCategories = signal<{ id_annotation: number; id_category: number }[]>([]);
   readonly selectedCommuneId = signal<number | null>(null);
   readonly selectedNeighborhoodId = signal<number | null>(null);
   readonly selectedCategoryFilter = signal<number | null>(null);
   readonly points = signal<Point[]>([]);
   readonly selectedLocation = signal<AnnotationMapSelection | null>(null);
-  readonly selectedAnnotationId = signal<number | null>(null);
-  readonly selectedAnnotationEvidences = signal<Evidence[]>([]);
-  readonly selectedAnnotationVotes = signal<Vote[]>([]);
-  readonly currentCitizenId = signal<number | null>(null);
-  readonly existingCitizenVote = signal<Vote | null>(null);
-  readonly voteStars = signal(0);
-  readonly voteComment = signal('');
+  readonly savedMarkers = signal<AnnotationMarker[]>([]);
 
   readonly filteredNeighborhoods = computed(() => {
     const communeId = this.selectedCommuneId();
@@ -105,66 +85,8 @@ export class AnnotationComponent implements OnInit {
     };
   });
 
-  readonly filteredAnnotations = computed(() => {
-    const neighborhoodId = this.selectedNeighborhoodId();
-    const categoryId = this.selectedCategoryFilter();
-
-    return this.annotations().filter((annotation) => {
-      const matchesNeighborhood = neighborhoodId === null
-        ? true
-        : Number(annotation.id_neighborhood) === Number(neighborhoodId);
-      const matchesCategory = categoryId === null
-        ? true
-        : this.annotationCategories().some((item) =>
-          Number(item.id_annotation) === Number(annotation.id_annotation) &&
-          Number(item.id_category) === Number(categoryId),
-        );
-
-      return matchesNeighborhood && matchesCategory;
-    });
-  });
-
-  readonly savedMarkers = computed<AnnotationMarker[]>(() => {
-    const selectedId = this.selectedAnnotationId();
-
-    return this.filteredAnnotations().map((annotation) => ({
-      id: annotation.id_annotation,
-      latitude: Number(annotation.latitude),
-      longitude: Number(annotation.longitude),
-      status: annotation.status,
-      selected: Number(annotation.id_annotation) === Number(selectedId),
-    }));
-  });
-
-  readonly selectedAnnotation = computed(() => {
-    const annotationId = this.selectedAnnotationId();
-    return this.annotations().find((annotation) =>
-      Number(annotation.id_annotation) === Number(annotationId),
-    ) ?? null;
-  });
-
-  readonly averageRating = computed(() => {
-    const votes = this.selectedAnnotationVotes();
-    if (!votes.length) return 0;
-
-    const total = votes.reduce((sum, vote) => sum + Number(vote.stars), 0);
-    return Math.round((total / votes.length) * 10) / 10;
-  });
-
-  readonly ratingRows = computed(() => [5, 4, 3, 2, 1].map((star) => {
-    const count = this.selectedAnnotationVotes().filter((vote) => Number(vote.stars) === star).length;
-    const total = this.selectedAnnotationVotes().length || 1;
-
-    return {
-      star,
-      count,
-      percentage: Math.round((count / total) * 100),
-    };
-  }));
-
   ngOnInit(): void {
     this.loadInitialData();
-    this.currentCitizenService.getCurrentCitizenId().subscribe((id) => this.currentCitizenId.set(id));
   }
 
   onCommuneChange(value: string): void {
@@ -180,12 +102,9 @@ export class AnnotationComponent implements OnInit {
     const neighborhoodId = value ? Number(value) : null;
     this.selectedNeighborhoodId.set(neighborhoodId);
     this.selectedLocation.set(null);
-    this.closeAnnotationDetail();
   }
 
   async onMapSelection(selection: AnnotationMapSelection): Promise<void> {
-    this.closeAnnotationDetail();
-
     if (selection.insidePolygon) {
       this.selectedLocation.set(selection);
       return;
@@ -209,68 +128,16 @@ export class AnnotationComponent implements OnInit {
     this.selectedLocation.set(null);
   }
 
-  selectExistingAnnotation(annotationId: number): void {
-    this.selectedLocation.set(null);
-    this.selectedAnnotationId.set(annotationId);
-    this.loadAnnotationDetail(annotationId);
-  }
-
-  closeAnnotationDetail(): void {
-    this.selectedAnnotationId.set(null);
-    this.selectedAnnotationEvidences.set([]);
-    this.selectedAnnotationVotes.set([]);
-    this.existingCitizenVote.set(null);
-    this.voteStars.set(0);
-    this.voteComment.set('');
-  }
-
-  setRating(stars: number): void {
-    this.voteStars.set(stars);
-  }
-
-  saveVote(): void {
-    const annotation = this.selectedAnnotation();
-    const citizenId = this.currentCitizenId();
-
-    if (!annotation || !citizenId) return;
-    if (this.voteStars() < 1 || this.voteStars() > 5) {
-      void Swal.fire('Calificacion requerida', 'Selecciona entre 1 y 5 estrellas.', 'warning');
-      return;
-    }
-
-    this.voteSaving.set(true);
-    this.voteService.saveCitizenVote(this.existingCitizenVote(), {
-      id_annotation: annotation.id_annotation,
-      id_citizen: citizenId,
-      stars: this.voteStars(),
-      comment: this.voteComment().trim(),
-    }).pipe(
-      switchMap(() => forkJoin({
-        votes: this.voteService.getByAnnotation(annotation.id_annotation),
-        citizenVote: this.voteService.getCitizenVote(annotation.id_annotation, citizenId),
-      })),
-      finalize(() => this.voteSaving.set(false)),
-    ).subscribe({
-      next: ({ votes, citizenVote }) => {
-        this.selectedAnnotationVotes.set(votes);
-        this.existingCitizenVote.set(citizenVote);
-        void Swal.fire('Guardado', 'Tu calificacion fue registrada correctamente.', 'success');
-      },
-      error: (error) => void Swal.fire('Error', this.getSaveErrorMessage(error), 'error'),
-    });
-  }
-
   saveAnnotation(value: AnnotationFormValue): void {
     const location = this.selectedLocation();
     if (!location) return;
 
     const neighborhoodId = location.insidePolygon ? this.selectedNeighborhoodId() : null;
-    const citizenId = this.currentCitizenId() ?? 1;
     this.saving.set(true);
 
     this.annotationService.create({
       id_neighborhood: neighborhoodId,
-      id_citizen: citizenId,
+      id_citizen: 1,
       description: value.description,
       latitude: value.latitude,
       longitude: value.longitude,
@@ -284,13 +151,9 @@ export class AnnotationComponent implements OnInit {
       finalize(() => this.saving.set(false)),
     ).subscribe({
       next: (annotation) => {
-        this.annotations.update((annotations) => [...annotations, annotation]);
-        this.annotationCategories.update((items) => [
-          ...items,
-          ...value.categoryIds.map((id_category) => ({
-            id_annotation: annotation.id_annotation,
-            id_category,
-          })),
+        this.savedMarkers.update((markers) => [
+          ...markers,
+          { latitude: annotation.latitude, longitude: annotation.longitude },
         ]);
         this.selectedLocation.set(null);
         void Swal.fire('Guardado', 'La anotacion fue registrada correctamente.', 'success');
@@ -351,19 +214,15 @@ export class AnnotationComponent implements OnInit {
       categories: this.categoryService.getAll(),
       entities: this.entityService.getAll(),
       points: this.pointService.getAll(),
-      annotations: this.annotationService.getAll(),
-      annotationCategories: this.annotationService.getAnnotationCategories(),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: ({ communes, neighborhoods, categories, entities, points, annotations, annotationCategories }) => {
+        next: ({ communes, neighborhoods, categories, entities, points }) => {
           this.communes.set(communes);
           this.neighborhoods.set(neighborhoods);
           this.categories.set(categories);
           this.entities.set(entities);
           this.points.set(points);
-          this.annotations.set(annotations);
-          this.annotationCategories.set(annotationCategories);
 
           const firstCommune = communes[0] ?? null;
           this.selectedCommuneId.set(firstCommune?.id_commune ?? null);
@@ -373,25 +232,6 @@ export class AnnotationComponent implements OnInit {
           this.selectNeighborhood(firstNeighborhood?.id_neighborhood ?? null);
         },
         error: () => void Swal.fire('Error', 'No se pudo cargar la informacion inicial.', 'error'),
-      });
-  }
-
-  private loadAnnotationDetail(annotationId: number): void {
-    const citizenId = this.currentCitizenId() ?? 1;
-
-    this.detailLoading.set(true);
-    forkJoin({
-      evidences: this.evidenceService.getByAnnotation(annotationId).pipe(catchError(() => of([]))),
-      votes: this.voteService.getByAnnotation(annotationId).pipe(catchError(() => of([]))),
-      citizenVote: this.voteService.getCitizenVote(annotationId, citizenId).pipe(catchError(() => of(null))),
-    })
-      .pipe(finalize(() => this.detailLoading.set(false)))
-      .subscribe(({ evidences, votes, citizenVote }) => {
-        this.selectedAnnotationEvidences.set(evidences);
-        this.selectedAnnotationVotes.set(votes);
-        this.existingCitizenVote.set(citizenVote);
-        this.voteStars.set(citizenVote?.stars ?? 0);
-        this.voteComment.set(citizenVote?.comment ?? '');
       });
   }
 
@@ -414,25 +254,5 @@ export class AnnotationComponent implements OnInit {
     }
 
     return 'No se pudo guardar la anotacion.';
-  }
-
-  getAnnotationCategoryLabel(annotationId: number): string {
-    const categoryId = this.annotationCategories().find((item) =>
-      Number(item.id_annotation) === Number(annotationId),
-    )?.id_category;
-    return this.categories().find((category) =>
-      Number(category.id_category) === Number(categoryId),
-    )?.name ?? 'Sin categoria';
-  }
-
-  getNeighborhoodLabel(neighborhoodId: number | null): string {
-    if (!neighborhoodId) return 'Sin barrio asociado';
-    return this.neighborhoods().find((neighborhood) =>
-      Number(neighborhood.id_neighborhood) === Number(neighborhoodId),
-    )?.name ?? 'Barrio no encontrado';
-  }
-
-  getEvidenceUrl(evidence: Evidence): string {
-    return resolveBackendFileUrl(evidence.file_url);
   }
 }

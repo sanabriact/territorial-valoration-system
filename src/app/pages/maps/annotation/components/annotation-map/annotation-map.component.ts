@@ -17,6 +17,7 @@ export class AnnotationMapComponent implements AfterViewInit, OnDestroy {
 
   readonly polygon = input<NeighborhoodPolygon | null>(null);
   readonly savedMarkers = input<AnnotationMarker[]>([]);
+  readonly freeSelectionEnabled = input(true);
   readonly locationSelected = output<AnnotationMapSelection>();
   readonly annotationSelected = output<number>();
 
@@ -34,6 +35,7 @@ export class AnnotationMapComponent implements AfterViewInit, OnDestroy {
       this.controller.setPolygon(polygon);
     });
     effect(() => this.controller?.setSavedMarkers(this.savedMarkers()));
+    effect(() => this.controller?.setFreeSelectionEnabled(this.freeSelectionEnabled()));
   }
 
   ngAfterViewInit(): void {
@@ -44,6 +46,7 @@ export class AnnotationMapComponent implements AfterViewInit, OnDestroy {
     );
     this.controller.onLocationSelected((selection) => this.locationSelected.emit(selection));
     this.controller.onAnnotationSelected((annotationId) => this.annotationSelected.emit(annotationId));
+    this.controller.setFreeSelectionEnabled(this.freeSelectionEnabled());
     this.renderedPolygonVersion = this.polygon()?.version ?? '';
     this.controller.setPolygon(this.polygon());
     this.controller.setSavedMarkers(this.savedMarkers());
