@@ -1,0 +1,131 @@
+.report-chat {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.report-chat__messages {
+  display: flex;
+  max-height: 290px;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+  padding-right: 8px;
+}
+
+.report-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.report-message--user {
+  flex-direction: row-reverse;
+
+  .report-message__bubble {
+    border-color: #dce7ff;
+    background: #eef4ff;
+  }
+}
+
+.report-message__avatar {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #0f2f8f;
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+.report-message__bubble {
+  width: min(720px, 100%);
+  border: 1px solid #dfe7f3;
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #ffffff;
+  color: #172342;
+  box-shadow: 0 10px 24px rgba(25, 40, 75, 0.06);
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 800;
+  }
+
+  time {
+    display: block;
+    margin-top: 8px;
+    color: #66738c;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-align: right;
+  }
+}
+
+.report-message__bubble--loading {
+  color: #2563eb;
+  font-weight: 900;
+}
+
+.report-chat__composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px;
+  gap: 10px;
+  border: 1px solid #bcd0ff;
+  border-radius: 8px;
+  padding: 10px;
+  background: #ffffff;
+
+  textarea {
+    min-height: 54px;
+    border: 0;
+    color: #162344;
+    outline: 0;
+    resize: none;
+    font-weight: 700;
+  }
+
+  button {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    align-self: end;
+    border: 0;
+    border-radius: 50%;
+    background: #2563eb;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 1.2rem;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+  }
+}
+
+.report-chat__examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: #5f6b84;
+  font-size: 0.78rem;
+  font-weight: 800;
+
+  button {
+    border: 1px solid #e3e9f4;
+    border-radius: 999px;
+    padding: 7px 12px;
+    background: #f8fbff;
+    color: #26395f;
+    cursor: pointer;
+    font-weight: 800;
+  }
+}
+

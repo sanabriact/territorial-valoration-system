@@ -166,6 +166,11 @@ export class SidebarComponent implements OnChanges {
             icon: 'solar:map-linear',
             route: '/map',
           },
+          {
+            label: 'Reportes',
+            icon: 'solar:document-text-linear',
+            route: '/reports',
+          },
         ],
       },
     ];

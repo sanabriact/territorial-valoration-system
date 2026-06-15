@@ -1,0 +1,58 @@
+<section class="report-chat">
+  <div class="report-chat__messages">
+    @for(message of messages(); track message.id) {
+      <article class="report-message" [class.report-message--user]="message.sender === 'user'">
+        <div class="report-message__avatar">
+          @if(message.sender === 'user') {
+            <iconify-icon icon="solar:user-rounded-bold"></iconify-icon>
+          } @else {
+            <iconify-icon icon="solar:chat-round-like-bold"></iconify-icon>
+          }
+        </div>
+        <div class="report-message__bubble">
+          <p>{{ message.text }}</p>
+          <time>{{ message.createdAt | date:'shortTime' }}</time>
+        </div>
+      </article>
+    }
+
+    @if(loading()) {
+      <article class="report-message">
+        <div class="report-message__avatar">
+          <iconify-icon icon="solar:chat-round-like-bold"></iconify-icon>
+        </div>
+        <div class="report-message__bubble report-message__bubble--loading">
+          Interpretando consulta...
+        </div>
+      </article>
+    }
+  </div>
+
+  <form class="report-chat__composer" (ngSubmit)="submit()">
+    <textarea
+      rows="2"
+      name="reportQuery"
+      placeholder="Escribe tu consulta en lenguaje natural..."
+      [ngModel]="query()"
+      (ngModelChange)="query.set($event)"
+      [disabled]="loading()">
+    </textarea>
+    <button type="submit" [disabled]="!query().trim() || loading()" aria-label="Enviar consulta">
+      <iconify-icon icon="solar:plain-2-bold"></iconify-icon>
+    </button>
+  </form>
+
+  <div class="report-chat__examples">
+    <span>Ejemplos:</span>
+    <button type="button" (click)="useExample('Cuantas anotaciones hay por categoria este mes?')">
+      Cuantas anotaciones hay por categoria este mes?
+    </button>
+    <button type="button" (click)="useExample('Top 5 barrios con mas puntos criticos')">
+      Top 5 barrios con mas puntos criticos
+    </button>
+    <button type="button" (click)="useExample('Anotaciones por entidad responsable')">
+      Anotaciones por entidad responsable
+    </button>
+  </div>
+</section>
+

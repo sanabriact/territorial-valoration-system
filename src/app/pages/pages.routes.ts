@@ -9,6 +9,7 @@ import { demarcationRoutes } from './maps/demarcation/demarcation.routes';
 import { followupRoutes } from './maps/followup/followup.routes';
 import { annotationRoutes } from './maps/annotation/annotation.routes';
 import { citizenMapRoutes } from './maps/citizen-map/citizen-map.routes';
+import { reportsRoutes } from './reports/reports.routes';
 import { roleGuard } from '../guards/role.guard';
 
 export const pagesRoutes: Routes = [
@@ -28,4 +29,5 @@ export const pagesRoutes: Routes = [
     ...demarcationRoutes,
     ...annotationRoutes,
     ...citizenMapRoutes,
+    ...reportsRoutes,
 ];

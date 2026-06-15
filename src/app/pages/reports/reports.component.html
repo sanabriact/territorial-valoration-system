@@ -1,0 +1,50 @@
+<section class="reports-page">
+  <div class="reports-shell">
+    <div class="reports-tabs">
+      <button type="button" class="reports-tabs__item reports-tabs__item--active">Chat de reportes</button>
+      <button type="button" class="reports-tabs__item" disabled>Historial de consultas</button>
+      <button type="button" class="reports-help" aria-label="Guia de uso">
+        <iconify-icon icon="solar:question-circle-linear"></iconify-icon>
+      </button>
+    </div>
+
+    <div class="reports-content">
+      <app-report-chat
+        [messages]="messages()"
+        [loading]="loading()"
+        (querySubmit)="submitQuery($event)">
+      </app-report-chat>
+
+      <section class="report-result">
+        <div class="report-result__empty" *ngIf="!activeReport()">
+          <iconify-icon icon="solar:chart-2-linear"></iconify-icon>
+          <h2>Sin reporte generado</h2>
+          <p>Realiza una consulta para visualizar la grafica recomendada por el sistema.</p>
+        </div>
+
+        <ng-container *ngIf="activeReport() as report">
+          <div class="report-format-bar">
+            @for(option of viewOptions(); track option.type) {
+              <button
+                type="button"
+                [disabled]="!option.enabled"
+                [class.report-format-bar__button--active]="selectedView() === option.type"
+                [title]="option.enabled ? option.label : option.disabledReason"
+                (click)="selectView(option)">
+                <iconify-icon [icon]="option.icon"></iconify-icon>
+                {{ option.label }}
+              </button>
+            }
+            <span>
+              <iconify-icon icon="solar:info-circle-bold"></iconify-icon>
+              Los formatos no pertinentes se deshabilitan automaticamente.
+            </span>
+          </div>
+
+          <app-report-chart [report]="report" [viewType]="selectedView()"></app-report-chart>
+        </ng-container>
+      </section>
+    </div>
+  </div>
+</section>
+
