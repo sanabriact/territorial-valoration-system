@@ -35,3 +35,10 @@ export interface ReportChatMessage {
   createdAt: Date;
 }
 
+export interface ReportHistoryEntry {
+  id: string;
+  query: string;
+  report: ReportResponse;
+  viewType: ReportViewType;
+  createdAt: string;
+}

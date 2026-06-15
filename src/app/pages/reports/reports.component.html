@@ -1,19 +1,39 @@
 <section class="reports-page">
   <div class="reports-shell">
     <div class="reports-tabs">
-      <button type="button" class="reports-tabs__item reports-tabs__item--active">Chat de reportes</button>
-      <button type="button" class="reports-tabs__item" disabled>Historial de consultas</button>
+      <button
+        type="button"
+        class="reports-tabs__item"
+        [class.reports-tabs__item--active]="activeTab() === 'chat'"
+        (click)="showTab('chat')">
+        Chat de reportes
+      </button>
+      <button
+        type="button"
+        class="reports-tabs__item"
+        [class.reports-tabs__item--active]="activeTab() === 'history'"
+        (click)="showTab('history')">
+        Historial de consultas
+      </button>
       <button type="button" class="reports-help" aria-label="Guia de uso">
         <iconify-icon icon="solar:question-circle-linear"></iconify-icon>
       </button>
     </div>
 
     <div class="reports-content">
-      <app-report-chat
-        [messages]="messages()"
-        [loading]="loading()"
-        (querySubmit)="submitQuery($event)">
-      </app-report-chat>
+      @if(activeTab() === 'chat') {
+        <app-report-chat
+          [messages]="messages()"
+          [loading]="loading()"
+          (querySubmit)="submitQuery($event)">
+        </app-report-chat>
+      } @else {
+        <app-report-history
+          [entries]="historyEntries()"
+          (entrySelected)="restoreHistory($event)"
+          (historyCleared)="clearHistory()">
+        </app-report-history>
+      }
 
       <section class="report-result">
         <div class="report-result__empty" *ngIf="!activeReport()">
@@ -47,4 +67,3 @@
     </div>
   </div>
 </section>
-

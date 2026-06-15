@@ -1,0 +1,36 @@
+<section class="report-history">
+  <header>
+    <div>
+      <h2>Historial de consultas</h2>
+      <p>Reabre reportes generados anteriormente en este navegador.</p>
+    </div>
+    <button type="button" (click)="historyCleared.emit()" [disabled]="entries().length === 0">
+      <iconify-icon icon="solar:trash-bin-trash-linear"></iconify-icon>
+      Limpiar
+    </button>
+  </header>
+
+  @if(entries().length === 0) {
+    <div class="report-history__empty">
+      <iconify-icon icon="solar:history-2-linear"></iconify-icon>
+      <strong>No hay consultas guardadas</strong>
+      <span>Los reportes exitosos apareceran aqui automaticamente.</span>
+    </div>
+  } @else {
+    <div class="report-history__list">
+      @for(entry of entries(); track entry.id) {
+        <button type="button" class="report-history__item" (click)="entrySelected.emit(entry)">
+          <span class="report-history__icon">
+            <iconify-icon [icon]="entry.report.type === 'pie' ? 'solar:pie-chart-2-bold' : entry.report.type === 'line' ? 'solar:chart-bold' : 'solar:chart-2-bold'"></iconify-icon>
+          </span>
+          <span class="report-history__content">
+            <strong>{{ entry.query }}</strong>
+            <small>{{ entry.createdAt | date:'medium' }} · {{ entry.report.type | uppercase }}</small>
+          </span>
+          <iconify-icon icon="solar:alt-arrow-right-linear"></iconify-icon>
+        </button>
+      }
+    </div>
+  }
+</section>
+

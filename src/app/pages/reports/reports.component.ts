@@ -1,33 +1,43 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, computed, inject, signal } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit, computed, inject, signal } from '@angular/core';
 import Swal from 'sweetalert2';
 
 import {
   ReportChatMessage,
+  ReportHistoryEntry,
   ReportResponse,
   ReportViewOption,
   ReportViewType,
 } from '../../models/Report';
+import { ReportHistoryService } from '../../services/reports/report-history.service';
 import { ReportService } from '../../services/reports/report.service';
 import { ReportChatComponent } from './components/report-chat/report-chat.component';
 import { ReportChartDisplayComponent } from './components/report-chart/report-chart.component';
+import { ReportHistoryComponent } from './components/report-history/report-history.component';
 import { ReportChartMapper } from './utils/report-chart.mapper';
+import { ReportErrorMessageMapper } from './utils/report-error-message.mapper';
+
+type ReportsTab = 'chat' | 'history';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, ReportChatComponent, ReportChartDisplayComponent],
+  imports: [CommonModule, ReportChatComponent, ReportChartDisplayComponent, ReportHistoryComponent],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ReportsComponent {
+export class ReportsComponent implements OnInit {
   private readonly reportService = inject(ReportService);
+  private readonly reportHistoryService = inject(ReportHistoryService);
 
   readonly loading = signal(false);
+  readonly activeTab = signal<ReportsTab>('chat');
   readonly currentReport = signal<ReportResponse | null>(null);
+  readonly currentQuery = signal('');
   readonly selectedView = signal<ReportViewType>('simple-bar');
+  readonly historyEntries = signal<ReportHistoryEntry[]>([]);
   readonly messages = signal<ReportChatMessage[]>([
     {
       id: 1,
@@ -43,9 +53,14 @@ export class ReportsComponent {
 
   readonly activeReport = computed(() => this.currentReport());
 
+  ngOnInit(): void {
+    this.historyEntries.set(this.reportHistoryService.getAll());
+  }
+
   submitQuery(query: string): void {
     if (this.loading()) return;
 
+    this.currentQuery.set(query);
     this.pushMessage('user', query);
     this.loading.set(true);
 
@@ -64,37 +79,41 @@ export class ReportsComponent {
     this.selectedView.set(option.type);
   }
 
+  showTab(tab: ReportsTab): void {
+    this.activeTab.set(tab);
+  }
+
+  restoreHistory(entry: ReportHistoryEntry): void {
+    this.currentQuery.set(entry.query);
+    this.currentReport.set(entry.report);
+    this.selectedView.set(entry.viewType);
+    this.activeTab.set('chat');
+    this.pushMessage('user', entry.query);
+    this.pushMessage('assistant', ReportChartMapper.getSummaryText(entry.report));
+  }
+
+  clearHistory(): void {
+    this.reportHistoryService.clear();
+    this.historyEntries.set([]);
+  }
+
   private handleReport(report: ReportResponse): void {
     this.loading.set(false);
     this.currentReport.set(report);
-    this.selectedView.set(ReportChartMapper.getDefaultView(report));
+    const viewType = ReportChartMapper.getDefaultView(report);
+    this.selectedView.set(viewType);
+    this.historyEntries.set(this.reportHistoryService.save(this.currentQuery(), report, viewType));
     this.pushMessage('assistant', ReportChartMapper.getSummaryText(report));
   }
 
   private handleError(error: HttpErrorResponse): void {
     this.loading.set(false);
-    const message = this.getErrorMessage(error);
+    const message = ReportErrorMessageMapper.toMessage(error);
     this.pushMessage('assistant', message);
 
     if (error.status >= 500) {
       void Swal.fire('Error', message, 'error');
     }
-  }
-
-  private getErrorMessage(error: HttpErrorResponse): string {
-    if (error.status === 400) {
-      return 'La consulta esta vacia o malformada. Intenta escribir una pregunta mas especifica.';
-    }
-
-    if (error.status === 422) {
-      return 'No pude asociar la consulta a un tipo de reporte. Prueba con ejemplos como: anotaciones por categoria este mes, top barrios con mas puntos criticos o anotaciones por entidad responsable.';
-    }
-
-    if (error.status === 404) {
-      return 'No hay registros para los filtros indicados en la consulta.';
-    }
-
-    return 'No se pudo generar el reporte en este momento. Intenta nuevamente.';
   }
 
   private pushMessage(sender: ReportChatMessage['sender'], text: string): void {
@@ -109,4 +128,3 @@ export class ReportsComponent {
     ]);
   }
 }
-
