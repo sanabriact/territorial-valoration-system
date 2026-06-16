@@ -11,6 +11,7 @@ import { OSM } from 'ol/source';
 import VectorSource from 'ol/source/Vector';
 import CircleStyle from 'ol/style/Circle';
 import Fill from 'ol/style/Fill';
+import Icon from 'ol/style/Icon';
 import Stroke from 'ol/style/Stroke';
 import Style from 'ol/style/Style';
 import Text from 'ol/style/Text';
@@ -26,6 +27,7 @@ export class AnnotationsMapController {
   private readonly map: OlMap;
   private clickKey: EventsKey | null = null;
   private onMarkerClick: ((annotationId: number) => void) | null = null;
+  private fittedInitialPolygons = false;
 
   constructor(target: HTMLElement, center: MapCoordinates, zoom: number) {
     this.map = new OlMap({
@@ -33,10 +35,14 @@ export class AnnotationsMapController {
       controls: defaultControls({ attribution: true, rotate: false, zoom: true }),
       layers: [
         new TileLayer({ source: new OSM() }),
-        new VectorLayer({ source: this.polygonSource, style: this.getPolygonStyle(), zIndex: 1 }),
+        new VectorLayer({
+          source: this.polygonSource,
+          style: (feature) => this.getPolygonStyle(Boolean(feature.get('selected'))),
+          zIndex: 1,
+        }),
         new VectorLayer({
           source: this.markerSource,
-          style: (feature) => this.getMarkerStyle(feature.get('color'), feature.get('label')),
+          style: (feature) => this.getMarkerStyle(feature.get('color'), feature.get('label'), feature.get('imageUrl')),
           zIndex: 2,
         }),
       ],
@@ -57,14 +63,41 @@ export class AnnotationsMapController {
     this.onMarkerClick = callback;
   }
 
-  setPolygon(polygon: AnnotationPolygon | null): void {
+  setPolygons(polygons: AnnotationPolygon[]): void {
     this.polygonSource.clear();
-    if (!polygon) return;
+    if (polygons.length === 0) return;
 
-    const coordinates = polygon.points.map((point) => fromLonLat([point.longitude, point.latitude]));
-    this.polygonSource.addFeature(new Feature({ geometry: new Polygon([[...coordinates, coordinates[0]]]) }));
+    const polygonCoordinateSets = polygons
+      .map((polygon) => ({
+        polygon,
+        coordinates: polygon.points.map((point) => fromLonLat([point.longitude, point.latitude])),
+      }))
+      .filter((item) => item.coordinates.length >= 3);
+
+    polygonCoordinateSets.forEach(({ polygon, coordinates }) => {
+      this.polygonSource.addFeature(new Feature({
+        geometry: new Polygon([[...coordinates, coordinates[0]]]),
+        polygonId: polygon.id,
+        name: polygon.name,
+        selected: polygon.selected,
+      }));
+    });
+
     this.map.updateSize();
-    this.map.getView().fit(boundingExtent(coordinates), { padding: [80, 80, 80, 80], maxZoom: 15, duration: 250 });
+
+    const selectedCoordinates = polygonCoordinateSets.find((item) => item.polygon.selected)?.coordinates;
+    if (selectedCoordinates) {
+      this.map.getView().fit(boundingExtent(selectedCoordinates), { padding: [80, 80, 80, 80], maxZoom: 15, duration: 250 });
+      return;
+    }
+
+    if (!this.fittedInitialPolygons) {
+      const allCoordinates = polygonCoordinateSets.flatMap((item) => item.coordinates);
+      if (allCoordinates.length > 0) {
+        this.map.getView().fit(boundingExtent(allCoordinates), { padding: [80, 80, 80, 80], maxZoom: 13, duration: 250 });
+        this.fittedInitialPolygons = true;
+      }
+    }
   }
 
   setMarkers(markers: AnnotationMapMarker[]): void {
@@ -75,6 +108,7 @@ export class AnnotationsMapController {
         annotationId: marker.id,
         color: marker.color,
         label: marker.label,
+        imageUrl: marker.imageUrl,
       });
       this.markerSource.addFeature(feature);
     });
@@ -87,14 +121,25 @@ export class AnnotationsMapController {
     this.map.setTarget(undefined as any);
   }
 
-  private getPolygonStyle(): Style {
+  private getPolygonStyle(selected: boolean): Style {
     return new Style({
-      fill: new Fill({ color: 'rgba(37, 99, 235, 0.13)' }),
-      stroke: new Stroke({ color: '#2563eb', width: 2.5 }),
+      fill: new Fill({ color: selected ? 'rgba(37, 99, 235, 0.18)' : 'rgba(37, 99, 235, 0.08)' }),
+      stroke: new Stroke({ color: selected ? '#2563eb' : '#60a5fa', width: selected ? 2.8 : 1.4 }),
     });
   }
 
-  private getMarkerStyle(color: string, label: string): Style {
+  private getMarkerStyle(color: string, label: string, imageUrl: string | null): Style {
+    if (imageUrl) {
+      return new Style({
+        image: new Icon({
+          src: imageUrl,
+          crossOrigin: 'anonymous',
+          anchor: [0.5, 1],
+          scale: 0.15,
+        }),
+      });
+    }
+
     return new Style({
       image: new CircleStyle({
         radius: 13,

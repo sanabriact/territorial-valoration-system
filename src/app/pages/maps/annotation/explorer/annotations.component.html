@@ -12,7 +12,7 @@
 
     <label>
       <span>Barrio</span>
-      <select [ngModel]="selectedNeighborhoodId()" (ngModelChange)="selectedNeighborhoodId.set($event)">
+      <select [ngModel]="selectedNeighborhoodId()" (ngModelChange)="onNeighborhoodChange($event)">
         <option [ngValue]="null">Todos</option>
         @for(neighborhood of filteredNeighborhoods(); track neighborhood.id_neighborhood) {
           <option [ngValue]="neighborhood.id_neighborhood">{{ neighborhood.name }}</option>
@@ -26,7 +26,7 @@
         type="text"
         placeholder="Buscar en el mapa"
         [ngModel]="searchQuery()"
-        (ngModelChange)="searchQuery.set($event)">
+        (ngModelChange)="onSearchChange($event)">
     </label>
 
     <button type="button" class="annotations-mode-btn" [class.annotations-mode-btn--active]="showFilters()" (click)="showFilters.set(!showFilters())">
@@ -40,7 +40,7 @@
         <div class="annotations-empty">Cargando anotaciones...</div>
       } @else {
         <app-annotations-map
-          [polygon]="selectedPolygon()"
+          [polygon]="polygons()"
           [markers]="markers()"
           (annotationSelected)="selectAnnotation($event)">
         </app-annotations-map>

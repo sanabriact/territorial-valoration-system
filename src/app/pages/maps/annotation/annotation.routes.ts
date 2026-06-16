@@ -12,16 +12,14 @@ export const annotationRoutes: Routes = [
     },
   },
   {
-        path: 'map/annotations',
-        canActivate: [roleGuard],
-        loadComponent: () =>
-            import('../citizen-map/citizen-map.component').then(
-                (module) => module.CitizenMapComponent,
-            ),
-        data: {
-            title: 'Mapa de anotaciones',
-            subtitle: 'Explora y filtra anotaciones ciudadanas por categoría y territorio.',
-            roles: ['ADMIN', 'FUNCIONARIO'],
-        },
+    path: 'map/annotations',
+    canActivate: [roleGuard],
+    loadComponent: () =>
+      import('./explorer/annotations.component').then((module) => module.AnnotationsComponent),
+    data: {
+      title: 'Mapa de anotaciones',
+      subtitle: 'Explora y filtra anotaciones ciudadanas por categoria y territorio.',
+      roles: ['ADMIN', 'FUNCIONARIO', 'CIUDADANO'],
     },
+  },
 ];

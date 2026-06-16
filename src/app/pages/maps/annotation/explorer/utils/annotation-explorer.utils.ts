@@ -5,10 +5,21 @@ import { Evidence } from '../../../../../models/Evidence';
 import { Neighborhood } from '../../../../../models/Neighborhood';
 import { Point } from '../../../../../models/Point';
 import { Vote } from '../../../../../models/Vote';
-import { AnnotationExplorerItem, CategoryTreeNode } from '../models/annotation-explorer.model';
+import { resolveBackendFileUrl } from '../../../../../utils/file-url';
+import { AnnotationExplorerItem, AnnotationPolygon, CategoryTreeNode } from '../models/annotation-explorer.model';
 import { Annotation } from '../../../../../models/Annotation';
 
 const CATEGORY_COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b', '#14b8a6'];
+const DEFAULT_CATEGORY_IMAGES = [
+  {
+    aliases: ['infrastructure', 'infraestructure', 'inftrastructure', 'infraestructura', 'infraestructuras'],
+    imageUrl: '/infrastructure.png',
+  },
+  {
+    aliases: ['roads and sidewalks', 'road and sidewalk', 'vias y andenes', 'andenes', 'sidewalk'],
+    imageUrl: '/street.png',
+  },
+];
 
 export function buildAnnotationItems(
   annotations: Annotation[],
@@ -70,15 +81,47 @@ export function getCategoryColor(categoryId: number | null): string {
   return CATEGORY_COLORS[Math.abs(categoryId) % CATEGORY_COLORS.length];
 }
 
+export function getCategoryMarkerImage(category: Category | null): string | null {
+  if (!category) return null;
+
+  const imageUrl = category.image_url?.trim();
+  if (imageUrl) return resolveBackendFileUrl(imageUrl);
+
+  const normalizedName = normalizeCategoryName(category.name);
+  const defaultImage = DEFAULT_CATEGORY_IMAGES.find((item) =>
+    item.aliases.some((alias) => normalizedName.includes(normalizeCategoryName(alias))),
+  );
+
+  return defaultImage?.imageUrl ?? null;
+}
+
 export function getDescendantCategoryIds(category: Category, categories: Category[]): number[] {
   const categoryId = Number(category.id_category);
   const children = categories.filter((item) => Number(item.id_parent_category) === categoryId);
   return [categoryId, ...children.flatMap((child) => getDescendantCategoryIds(child, categories))];
 }
 
-export function getNeighborhoodPolygon(neighborhoodId: number | null, points: Point[]) {
-  if (!neighborhoodId) return null;
-  const polygonPoints = points
+export function getNeighborhoodPolygons(
+  neighborhoods: Neighborhood[],
+  points: Point[],
+  selectedNeighborhoodId: number | null,
+): AnnotationPolygon[] {
+  return neighborhoods
+    .map((neighborhood) => {
+      const polygonPoints = getOrderedDemarcationPoints(Number(neighborhood.id_neighborhood), points);
+
+      return {
+        id: Number(neighborhood.id_neighborhood),
+        name: neighborhood.name,
+        selected: selectedNeighborhoodId !== null && Number(neighborhood.id_neighborhood) === Number(selectedNeighborhoodId),
+        points: polygonPoints,
+      };
+    })
+    .filter((polygon) => polygon.points.length >= 3);
+}
+
+function getOrderedDemarcationPoints(neighborhoodId: number, points: Point[]) {
+  return points
     .filter((point) =>
       Number(point.id_neighborhood) === Number(neighborhoodId) &&
       String(point.point_type).trim().toLowerCase() === 'demarcation',
@@ -86,8 +129,6 @@ export function getNeighborhoodPolygon(neighborhoodId: number | null, points: Po
     .sort((a, b) => Number(a.order) - Number(b.order))
     .map((point) => ({ latitude: Number(point.latitude), longitude: Number(point.longitude) }))
     .filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude));
-
-  return polygonPoints.length >= 3 ? { id: neighborhoodId, points: polygonPoints } : null;
 }
 
 function countCategoryAnnotations(category: Category, categories: Category[], items: AnnotationExplorerItem[]): number {
@@ -100,4 +141,12 @@ function countCategoryAnnotations(category: Category, categories: Category[], it
 function getAverageRating(votes: Vote[]): number {
   if (votes.length === 0) return 0;
   return votes.reduce((sum, vote) => sum + Number(vote.stars), 0) / votes.length;
+}
+
+function normalizeCategoryName(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
 }

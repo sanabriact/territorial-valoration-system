@@ -65,6 +65,10 @@ export class SidebarComponent implements OnChanges {
                 route: '/map/followup',
               },
               {
+                label: 'Demarcaciones',
+                route: '/map/demarcation',
+              },
+              {
                 label: 'Anotaciones',
                 route: '/map/annotations',
               },
@@ -133,11 +137,11 @@ export class SidebarComponent implements OnChanges {
                 route: '/map/followup',
               },
               {
-                label: 'Demarcacion',
+                label: 'Demarcaciones',
                 route: '/map/demarcation',
               },
               {
-                label: 'Anotacion',
+                label: 'Anotaciones',
                 route: '/map/annotation',
               },
             ],
@@ -164,7 +168,7 @@ export class SidebarComponent implements OnChanges {
           {
             label: 'Mapa',
             icon: 'solar:map-linear',
-            route: '/map',
+            route: '/map/annotations',
           },
           {
             label: 'Reportes',

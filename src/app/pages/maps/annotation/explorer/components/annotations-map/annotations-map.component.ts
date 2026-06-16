@@ -18,21 +18,21 @@ export class AnnotationsMapComponent implements AfterViewInit, OnDestroy {
   private readonly openMaps = inject(OpenMapsService);
   private readonly mapTarget = viewChild.required<ElementRef<HTMLDivElement>>('mapTarget');
 
-  readonly polygon = input<AnnotationPolygon | null>(null);
+  readonly polygon = input<AnnotationPolygon[]>([]);
   readonly markers = input<AnnotationMapMarker[]>([]);
   readonly annotationSelected = output<number>();
 
   private controller: AnnotationsMapController | null = null;
 
   constructor() {
-    effect(() => this.controller?.setPolygon(this.polygon()));
+    effect(() => this.controller?.setPolygons(this.polygon()));
     effect(() => this.controller?.setMarkers(this.markers()));
   }
 
   ngAfterViewInit(): void {
     this.controller = new AnnotationsMapController(this.mapTarget().nativeElement, this.openMaps.manizalesCenter, 13);
     this.controller.onAnnotationSelected((annotationId) => this.annotationSelected.emit(annotationId));
-    this.controller.setPolygon(this.polygon());
+    this.controller.setPolygons(this.polygon());
     this.controller.setMarkers(this.markers());
   }
 

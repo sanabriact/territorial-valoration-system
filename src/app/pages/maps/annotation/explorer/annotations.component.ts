@@ -22,8 +22,9 @@ import {
   buildAnnotationItems,
   buildCategoryTree,
   getCategoryColor,
+  getCategoryMarkerImage,
   getDescendantCategoryIds,
-  getNeighborhoodPolygon,
+  getNeighborhoodPolygons,
 } from './utils/annotation-explorer.utils';
 
 @Component({
@@ -68,38 +69,59 @@ export class AnnotationsComponent implements OnInit {
     );
   });
 
-  readonly filteredItems = computed(() => {
+  readonly territoryFilteredItems = computed(() => {
     const selectedCommuneId = this.selectedCommuneId();
     const selectedNeighborhoodId = this.selectedNeighborhoodId();
     const query = this.searchQuery().trim().toLowerCase();
-    const selectedCategoryIds = this.selectedCategoryIds();
 
     return this.items().filter((item) => {
       const matchesCommune = selectedCommuneId === null || Number(item.communeId) === Number(selectedCommuneId);
       const matchesNeighborhood =
         selectedNeighborhoodId === null || Number(item.annotation.id_neighborhood) === Number(selectedNeighborhoodId);
       const matchesQuery = !query || item.annotation.description.toLowerCase().includes(query);
-      const matchesCategory = selectedCategoryIds.length === 0 || this.matchesSelectedCategories(item, selectedCategoryIds);
-      return matchesCommune && matchesNeighborhood && matchesQuery && matchesCategory;
+      return matchesCommune && matchesNeighborhood && matchesQuery;
     });
   });
 
-  readonly categoryTree = computed(() => buildCategoryTree(this.categories(), this.items()));
+  readonly filteredItems = computed(() => {
+    const selectedCategoryIds = this.selectedCategoryIds();
+
+    return this.territoryFilteredItems().filter((item) => {
+      const matchesCategory = selectedCategoryIds.length === 0 || this.matchesSelectedCategories(item, selectedCategoryIds);
+      return matchesCategory;
+    });
+  });
+
+  readonly categoryTree = computed(() => buildCategoryTree(this.categories(), this.territoryFilteredItems()));
 
   readonly markers = computed<AnnotationMapMarker[]>(() =>
     this.filteredItems().map((item) => {
-      const mainCategory = item.categories[0] ?? null;
+      const markerCategory = this.getMarkerCategory(item, this.selectedCategoryIds());
       return {
         id: item.annotation.id_annotation,
         latitude: Number(item.annotation.latitude),
         longitude: Number(item.annotation.longitude),
-        color: getCategoryColor(mainCategory ? Number(mainCategory.id_category) : null),
+        color: getCategoryColor(markerCategory ? Number(markerCategory.id_category) : null),
         label: String(item.categories.length || ''),
+        imageUrl: getCategoryMarkerImage(markerCategory),
       };
     }),
   );
 
-  readonly selectedPolygon = computed(() => getNeighborhoodPolygon(this.selectedNeighborhoodId(), this.points()));
+  readonly polygonNeighborhoods = computed(() => {
+    const selectedNeighborhoodId = this.selectedNeighborhoodId();
+    if (selectedNeighborhoodId !== null) {
+      return this.neighborhoods().filter((neighborhood) =>
+        Number(neighborhood.id_neighborhood) === Number(selectedNeighborhoodId),
+      );
+    }
+
+    return this.filteredNeighborhoods();
+  });
+
+  readonly polygons = computed(() =>
+    getNeighborhoodPolygons(this.polygonNeighborhoods(), this.points(), this.selectedNeighborhoodId()),
+  );
 
   readonly selectedItem = computed(() =>
     this.items().find((item) => Number(item.annotation.id_annotation) === Number(this.selectedAnnotationId())) ?? null,
@@ -110,14 +132,27 @@ export class AnnotationsComponent implements OnInit {
   }
 
   onCommuneChange(value: number | null): void {
-    this.selectedCommuneId.set(value ? Number(value) : null);
+    this.selectedCommuneId.set(this.toOptionalNumber(value));
     this.selectedNeighborhoodId.set(null);
+    this.selectedAnnotationId.set(null);
+  }
+
+  onNeighborhoodChange(value: number | null): void {
+    const neighborhoodId = this.toOptionalNumber(value);
+    this.selectedNeighborhoodId.set(neighborhoodId);
+    this.selectedAnnotationId.set(null);
+  }
+
+  onSearchChange(value: string): void {
+    this.searchQuery.set(value);
+    this.selectedAnnotationId.set(null);
   }
 
   toggleCategory(categoryId: number): void {
     this.selectedCategoryIds.update((ids) =>
       ids.includes(Number(categoryId)) ? ids.filter((id) => id !== Number(categoryId)) : [...ids, Number(categoryId)],
     );
+    this.selectedAnnotationId.set(null);
   }
 
   clearFilters(): void {
@@ -125,6 +160,7 @@ export class AnnotationsComponent implements OnInit {
     this.selectedCommuneId.set(null);
     this.selectedNeighborhoodId.set(null);
     this.searchQuery.set('');
+    this.selectedAnnotationId.set(null);
   }
 
   selectAnnotation(annotationId: number): void {
@@ -165,5 +201,26 @@ export class AnnotationsComponent implements OnInit {
       const acceptedIds = getDescendantCategoryIds(selectedCategory, this.categories());
       return item.categories.some((category) => acceptedIds.includes(Number(category.id_category)));
     });
+  }
+
+  private getMarkerCategory(item: AnnotationExplorerItem, selectedCategoryIds: number[]): Category | null {
+    if (selectedCategoryIds.length === 0) return item.categories[0] ?? null;
+
+    for (const selectedCategoryId of selectedCategoryIds) {
+      const selectedCategory = this.categories().find((category) => Number(category.id_category) === Number(selectedCategoryId));
+      if (!selectedCategory) continue;
+
+      const acceptedIds = getDescendantCategoryIds(selectedCategory, this.categories());
+      const matchingCategory = item.categories.find((category) => acceptedIds.includes(Number(category.id_category)));
+      if (matchingCategory) return matchingCategory;
+    }
+
+    return item.categories[0] ?? null;
+  }
+
+  private toOptionalNumber(value: number | string | null): number | null {
+    if (value === null || value === '') return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 }

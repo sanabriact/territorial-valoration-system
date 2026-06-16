@@ -26,9 +26,12 @@ export interface AnnotationMapMarker {
   longitude: number;
   color: string;
   label: string;
+  imageUrl: string | null;
 }
 
 export interface AnnotationPolygon {
   id: number;
+  name: string;
+  selected: boolean;
   points: PolygonPoint[];
 }
