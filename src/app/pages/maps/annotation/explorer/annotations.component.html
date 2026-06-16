@@ -46,8 +46,18 @@
         </app-annotations-map>
       }
 
-      @if(!loading() && filteredItems().length === 0) {
-        <div class="annotations-empty">No hay registros para los filtros seleccionados.</div>
+      <!-- Flujo 2a: no existen anotaciones en el sistema -->
+      @if(!loading() && items().length === 0) {
+        <div class="annotations-empty annotations-empty--system">
+          No hay anotaciones registradas en el sistema.
+        </div>
+      }
+
+      <!-- Flujo 6a: hay anotaciones pero los filtros activos no devuelven resultados -->
+      @if(!loading() && items().length > 0 && filteredItems().length === 0) {
+        <div class="annotations-empty annotations-empty--filter">
+          No hay anotaciones para los filtros seleccionados. Prueba con otra categoría o limpiar los filtros.
+        </div>
       }
 
       <div class="annotations-legend">

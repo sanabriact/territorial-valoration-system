@@ -10,12 +10,19 @@ import {
   user,
 } from '@angular/fire/auth';
 import { BehaviorSubject, Observable, from } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import { AppUser, AppUserRole } from '../../models/security/AppUser';
 import { StorageService } from '../storage/storage.service';
 import { UserRoleResolverService } from './user-role-resolver.service';
 
 type SupportedOAuthProvider = GoogleAuthProvider | GithubAuthProvider | OAuthProvider;
+
+/** Códigos de Firebase que representan cierres de popup sin error real. */
+const RECOVERABLE_POPUP_ERRORS = new Set([
+  'auth/popup-closed-by-user',
+  'auth/cancelled-popup-request',
+  'auth/user-cancelled',
+]);
 
 @Injectable({ providedIn: 'root' })
 export class SecurityService {
@@ -64,14 +71,33 @@ export class SecurityService {
   changeRole(role: AppUserRole): void {
     const currentUser = this.getUser();
     if (!currentUser) return;
-
     this.setUser({ ...currentUser, role });
   }
 
   private loginWithProvider(provider: SupportedOAuthProvider): Observable<AppUser> {
     return from(
       signInWithPopup(this.auth, provider).then(result => this.buildAppUser(result.user))
-    ).pipe(tap(appUser => this.setUser(appUser)));
+    ).pipe(
+      catchError((error: { code?: string }) => {
+        /**
+         * Microsoft (y ocasionalmente otros proveedores) puede lanzar
+         * auth/popup-closed-by-user incluso cuando la autenticación completó,
+         * porque el popup se cierra como parte del flujo OAuth.
+         *
+         * Si el error es de este tipo Y Firebase ya tiene un usuario
+         * autenticado (this.auth.currentUser != null), la sesión sí inició:
+         * construimos el AppUser desde el estado real de Firebase.
+         *
+         * Si no hay currentUser, es una cancelación real del usuario;
+         * se vuelve a lanzar el error para que el componente lo maneje.
+         */
+        if (error?.code && RECOVERABLE_POPUP_ERRORS.has(error.code) && this.auth.currentUser) {
+          return from(this.buildAppUser(this.auth.currentUser));
+        }
+        throw error;
+      }),
+      tap(appUser => this.setUser(appUser)),
+    );
   }
 
   private async buildAppUser(firebaseUser: FirebaseUser): Promise<AppUser> {

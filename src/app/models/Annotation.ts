@@ -6,6 +6,7 @@ export interface Annotation {
   latitude: number;
   longitude: number;
   status: string;
+  created_at?: string;
 }
 
 export interface AnnotationRequest {

@@ -22,20 +22,35 @@
       <dl>
         <dt>Categoria</dt>
         <dd>{{ selected.categories[0]?.name || 'Sin categoria' }}</dd>
+
         <dt>Subcategorias</dt>
-        <dd>{{ selected.categories.slice(1).length || 'Sin subcategoria' }}</dd>
+        <dd>{{ subcategoryNames(selected) }}</dd>
+
         <dt>Estado</dt>
         <dd>{{ selected.annotation.status }}</dd>
+
+        <dt>Fecha de registro</dt>
+        <dd>
+          @if(selected.annotation.created_at) {
+            {{ selected.annotation.created_at | date:'dd/MM/yyyy HH:mm' }}
+          } @else {
+            No disponible
+          }
+        </dd>
       </dl>
     </section>
 
     <section>
       <h4>Evidencias ({{ selected.evidences.length }})</h4>
-      <div class="detail-evidences">
-        @for(evidence of selected.evidences.slice(0, 3); track evidence.id_evidence) {
-          <img [src]="getEvidenceUrl(evidence.file_url)" alt="Evidencia">
-        }
-      </div>
+      @if(selected.evidences.length === 0) {
+        <p class="detail-no-evidence">Sin evidencias fotográficas registradas.</p>
+      } @else {
+        <div class="detail-evidences">
+          @for(evidence of selected.evidences.slice(0, 3); track evidence.id_evidence) {
+            <img [src]="getEvidenceUrl(evidence.file_url)" alt="Evidencia">
+          }
+        </div>
+      }
     </section>
 
     <section>

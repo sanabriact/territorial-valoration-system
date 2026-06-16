@@ -15,31 +15,58 @@
   <div class="filter-tree">
     @for(category of tree(); track category.id_category) {
       <div class="filter-node">
-        <label>
-          <input
-            type="checkbox"
-            [checked]="isSelected(category.id_category)"
-            (change)="toggleCategory.emit(category.id_category)">
-          <span>{{ category.name }}</span>
-          <em>{{ category.annotationCount }}</em>
-        </label>
 
-        @if(category.children.length > 0) {
-          <div class="filter-children">
-            @for(child of category.children; track child.id_category) {
-              <label>
-                <input
-                  type="checkbox"
-                  [checked]="isSelected(child.id_category)"
-                  (change)="toggleCategory.emit(child.id_category)">
-                <span>{{ child.name }}</span>
-                <em>{{ child.annotationCount }}</em>
-              </label>
-            }
-          </div>
-        } @else {
-          <small>Sin subcategorias</small>
+        <!-- Cabecera de la categoría padre con toggle -->
+        <div class="filter-node__header">
+
+          <!-- Botón expand/collapse: solo si tiene hijos -->
+          @if(category.children.length > 0) {
+            <button
+              type="button"
+              class="filter-toggle"
+              [class.filter-toggle--open]="isExpanded(category.id_category)"
+              (click)="toggleExpand(category.id_category)"
+              [attr.aria-label]="isExpanded(category.id_category) ? 'Contraer' : 'Expandir'">
+              ▶
+            </button>
+          } @else {
+            <!-- Espaciador para alinear cuando no hay hijos -->
+            <span class="filter-toggle-spacer"></span>
+          }
+
+          <label class="filter-label">
+            <input
+              type="checkbox"
+              [checked]="isSelected(category.id_category)"
+              (change)="toggleCategory.emit(category.id_category)">
+            <span>{{ category.name }}</span>
+            <em>{{ category.annotationCount }}</em>
+          </label>
+        </div>
+
+        <!-- Subcategorías (visibles solo si está expandido) -->
+        @if(isExpanded(category.id_category)) {
+          @if(category.children.length > 0) {
+            <div class="filter-children">
+              @for(child of category.children; track child.id_category) {
+                <label class="filter-label">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(child.id_category)"
+                    (change)="toggleCategory.emit(child.id_category)">
+                  <span>{{ child.name }}</span>
+                  <em>{{ child.annotationCount }}</em>
+                </label>
+              }
+            </div>
+          }
         }
+
+        <!-- Flujo 7a: indicador visual cuando la categoría no tiene subcategorías -->
+        @if(category.children.length === 0) {
+          <small class="filter-no-sub">Sin subcategorias — el filtro aplica solo a esta categoría</small>
+        }
+
       </div>
     }
   </div>

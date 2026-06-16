@@ -7,6 +7,13 @@ import Swal from 'sweetalert2';
 import { Observable } from 'rxjs';
 import { AppUser } from '../../../models/security/AppUser';
 
+/** Códigos de Firebase que representan cancelaciones silenciosas del usuario. */
+const SILENT_AUTH_ERRORS = new Set([
+  'auth/popup-closed-by-user',
+  'auth/cancelled-popup-request',
+  'auth/user-cancelled',
+]);
+
 @Component({
   selector: 'app-side-login',
   standalone: true,
@@ -34,9 +41,13 @@ export class AppSideLoginComponent {
     this.loading = true;
     loginRequest.subscribe({
       next: () => this.router.navigate(['/home']),
-      error: (e) => {
+      error: (e: { code?: string; message?: string }) => {
         this.loading = false;
-        Swal.fire('Error', e.message, 'error');
+
+        // El usuario cerró el popup o canceló: no mostrar error.
+        if (e?.code && SILENT_AUTH_ERRORS.has(e.code)) return;
+
+        Swal.fire('Error al iniciar sesión', e?.message ?? 'Ocurrió un error inesperado.', 'error');
       },
     });
   }

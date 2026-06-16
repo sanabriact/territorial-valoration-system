@@ -64,11 +64,6 @@
       </label>
 
       <label class="category-field category-field--full">
-        <span>URL de imagen</span>
-        <input type="text" formControlName="image_url" placeholder="/logos/categoria.png" />
-      </label>
-
-      <label class="category-field category-field--full">
         <span>Descripcion <strong>*</strong></span>
         <textarea rows="4" formControlName="description" placeholder="Describe el significado de la categoria"></textarea>
         <small *ngIf="hasFieldError('description')">Ingresa al menos 5 caracteres.</small>

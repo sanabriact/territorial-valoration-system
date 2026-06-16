@@ -109,6 +109,18 @@ dl {
   }
 }
 
+/* Sin evidencias registradas */
+.detail-no-evidence {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
 .detail-rating {
   display: grid;
   grid-template-columns: auto 1fr;

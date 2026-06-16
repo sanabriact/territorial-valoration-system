@@ -52,18 +52,53 @@
   overflow: auto;
 }
 
-.filter-node,
-.filter-children {
+.filter-node {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
-.filter-children {
-  padding-left: 22px;
+.filter-node__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-label {
+/* Botón expand/collapse del árbol */
+.filter-toggle {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.6rem;
+  transition: transform 0.18s ease;
+  transform: rotate(0deg);
+  padding: 0;
+
+  &--open {
+    transform: rotate(90deg);
+    color: #2563eb;
+  }
+
+  &:hover {
+    color: #2563eb;
+  }
+}
+
+/* Espaciador para alinear etiquetas de nodos sin hijos */
+.filter-toggle-spacer {
+  flex-shrink: 0;
+  display: inline-block;
+  width: 20px;
+}
+
+.filter-label {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
@@ -71,10 +106,19 @@ label {
   color: #34405f;
   font-size: 0.78rem;
   font-weight: 800;
+  flex: 1;
+  min-width: 0;
+
+  input {
+    accent-color: #2563eb;
+  }
 }
 
-input {
-  accent-color: #2563eb;
+.filter-children {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 42px; /* alineado bajo el checkbox del padre */
 }
 
 em {
@@ -87,11 +131,13 @@ em {
   text-align: center;
 }
 
-small {
-  padding-left: 22px;
+/* Flujo 7a: indicador visual de categoría sin subcategorías */
+.filter-no-sub {
+  padding-left: 42px;
   color: #94a3b8;
   font-size: 0.72rem;
   font-weight: 700;
+  font-style: italic;
 }
 
 footer {

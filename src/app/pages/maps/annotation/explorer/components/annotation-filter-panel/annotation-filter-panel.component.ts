@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { CategoryTreeNode } from '../../models/annotation-explorer.model';
 
 @Component({
@@ -18,7 +18,26 @@ export class AnnotationFilterPanelComponent {
   readonly clearFilters = output<void>();
   readonly closePanel = output<void>();
 
+  /** IDs de nodos del árbol que están expandidos */
+  private readonly expandedIds = signal<Set<number>>(new Set<number>());
+
   isSelected(categoryId: number): boolean {
     return this.selectedCategoryIds().includes(Number(categoryId));
+  }
+
+  isExpanded(categoryId: number): boolean {
+    return this.expandedIds().has(Number(categoryId));
+  }
+
+  toggleExpand(categoryId: number): void {
+    this.expandedIds.update((current) => {
+      const next = new Set(current);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
   }
 }
