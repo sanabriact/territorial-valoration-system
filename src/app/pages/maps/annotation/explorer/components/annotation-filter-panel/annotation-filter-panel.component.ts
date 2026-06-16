@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, input, output, signal } from '@angular/core';
+import { resolveCategoryDisplayImageUrl } from '../../../../../../utils/category-image-url';
 import { CategoryTreeNode } from '../../models/annotation-explorer.model';
 
 @Component({
@@ -39,5 +40,9 @@ export class AnnotationFilterPanelComponent {
       }
       return next;
     });
+  }
+
+  resolveCategoryImage(category: CategoryTreeNode): string | null {
+    return resolveCategoryDisplayImageUrl(category);
   }
 }

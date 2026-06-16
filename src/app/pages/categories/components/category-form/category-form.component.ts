@@ -28,7 +28,7 @@ export class CategoryFormComponent {
   readonly formSubmit = output<CategoryFormValue>();
   readonly formCancel = output<void>();
 
-  readonly imagePreview = signal('imagen_por_defecto.png');
+  readonly imagePreview = signal('/street.png');
 
   readonly title = computed(() => (this.mode() === 'edit' ? 'Editar categoria' : 'Nueva categoria'));
   readonly subtitle = computed(() =>
@@ -88,13 +88,13 @@ export class CategoryFormComponent {
     }
 
     const reader = new FileReader();
-    reader.onload = () => this.imagePreview.set(String(reader.result ?? 'imagen_por_defecto.png'));
+    reader.onload = () => this.imagePreview.set(String(reader.result ?? '/street.png'));
     reader.readAsDataURL(file);
   }
 
   replaceBrokenImage(event: Event): void {
     const image = event.target as HTMLImageElement;
-    image.src = 'imagen_por_defecto.png';
+    image.src = '/street.png';
   }
 
   hasFieldError(field: keyof CategoryFormValue): boolean {

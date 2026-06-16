@@ -1,29 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, finalize } from 'rxjs';
+import { finalize } from 'rxjs';
 import Swal from 'sweetalert2';
-import { AnnotationService } from '../../../../services/annotations/annotation.service';
-import { CategoryService } from '../../../../services/categories/category.service';
-import { CommuneService } from '../../../../services/communes/commune.service';
-import { EvidenceService } from '../../../../services/evidences/evidence.service';
-import { NeighborhoodService } from '../../../../services/neighborhoods/neighborhood.service';
-import { PointService } from '../../../../services/points/point.service';
-import { VoteService } from '../../../../services/votes/vote.service';
 import { Category } from '../../../../models/Category';
 import { Commune } from '../../../../models/Commune';
 import { Neighborhood } from '../../../../models/Neighborhood';
 import { Point } from '../../../../models/Point';
+import { categoryMatchesSelection, getFirstMatchingCategory } from '../../../../utils/category-image-url';
 import { AnnotationDetailPanelComponent } from './components/annotation-detail-panel/annotation-detail-panel.component';
 import { AnnotationFilterPanelComponent } from './components/annotation-filter-panel/annotation-filter-panel.component';
 import { AnnotationsMapComponent } from './components/annotations-map/annotations-map.component';
+import { AnnotationExplorerDataService } from './data-access/annotation-explorer-data.service';
 import { AnnotationExplorerItem, AnnotationMapMarker } from './models/annotation-explorer.model';
 import {
   buildAnnotationItems,
   buildCategoryTree,
   getCategoryColor,
   getCategoryMarkerImage,
-  getDescendantCategoryIds,
   getNeighborhoodPolygons,
 } from './utils/annotation-explorer.utils';
 
@@ -41,13 +35,7 @@ import {
   styleUrl: './annotations.component.scss',
 })
 export class AnnotationsComponent implements OnInit {
-  private readonly annotationService = inject(AnnotationService);
-  private readonly categoryService = inject(CategoryService);
-  private readonly communeService = inject(CommuneService);
-  private readonly neighborhoodService = inject(NeighborhoodService);
-  private readonly pointService = inject(PointService);
-  private readonly evidenceService = inject(EvidenceService);
-  private readonly voteService = inject(VoteService);
+  private readonly explorerData = inject(AnnotationExplorerDataService);
 
   readonly loading = signal(false);
   readonly communes = signal<Commune[]>([]);
@@ -124,7 +112,7 @@ export class AnnotationsComponent implements OnInit {
   );
 
   readonly selectedItem = computed(() =>
-    this.items().find((item) => Number(item.annotation.id_annotation) === Number(this.selectedAnnotationId())) ?? null,
+    this.filteredItems().find((item) => Number(item.annotation.id_annotation) === Number(this.selectedAnnotationId())) ?? null,
   );
 
   ngOnInit(): void {
@@ -169,16 +157,7 @@ export class AnnotationsComponent implements OnInit {
 
   private loadData(): void {
     this.loading.set(true);
-    forkJoin({
-      annotations: this.annotationService.getAll(),
-      annotationCategories: this.annotationService.getAnnotationCategories(),
-      categories: this.categoryService.getAll(),
-      communes: this.communeService.getAll(),
-      neighborhoods: this.neighborhoodService.getAll(),
-      points: this.pointService.getAll(),
-      evidences: this.evidenceService.getAll(),
-      votes: this.voteService.getAll(),
-    })
+    this.explorerData.loadExplorerData()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: ({ annotations, annotationCategories, categories, communes, neighborhoods, points, evidences, votes }) => {
@@ -195,27 +174,11 @@ export class AnnotationsComponent implements OnInit {
   }
 
   private matchesSelectedCategories(item: AnnotationExplorerItem, selectedCategoryIds: number[]): boolean {
-    return selectedCategoryIds.some((selectedCategoryId) => {
-      const selectedCategory = this.categories().find((category) => Number(category.id_category) === Number(selectedCategoryId));
-      if (!selectedCategory) return false;
-      const acceptedIds = getDescendantCategoryIds(selectedCategory, this.categories());
-      return item.categories.some((category) => acceptedIds.includes(Number(category.id_category)));
-    });
+    return categoryMatchesSelection(this.categories(), item.categories, selectedCategoryIds);
   }
 
   private getMarkerCategory(item: AnnotationExplorerItem, selectedCategoryIds: number[]): Category | null {
-    if (selectedCategoryIds.length === 0) return item.categories[0] ?? null;
-
-    for (const selectedCategoryId of selectedCategoryIds) {
-      const selectedCategory = this.categories().find((category) => Number(category.id_category) === Number(selectedCategoryId));
-      if (!selectedCategory) continue;
-
-      const acceptedIds = getDescendantCategoryIds(selectedCategory, this.categories());
-      const matchingCategory = item.categories.find((category) => acceptedIds.includes(Number(category.id_category)));
-      if (matchingCategory) return matchingCategory;
-    }
-
-    return item.categories[0] ?? null;
+    return getFirstMatchingCategory(this.categories(), item.categories, selectedCategoryIds);
   }
 
   private toOptionalNumber(value: number | string | null): number | null {

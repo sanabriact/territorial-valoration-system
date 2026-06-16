@@ -13,6 +13,7 @@ export function resolveBackendFileUrl(fileUrl: string | null | undefined): strin
   if (normalized.startsWith('/uploads/') || normalized.startsWith('/static/') || normalized.startsWith('/images/')) {
     return normalized;
   }
+  if (normalized.startsWith('/')) return normalized;
 
   if (normalized.startsWith('uploads/') || normalized.startsWith('static/') || normalized.startsWith('images/')) {
     return `/${normalized}`;

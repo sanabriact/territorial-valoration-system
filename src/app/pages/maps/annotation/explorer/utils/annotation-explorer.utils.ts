@@ -5,21 +5,11 @@ import { Evidence } from '../../../../../models/Evidence';
 import { Neighborhood } from '../../../../../models/Neighborhood';
 import { Point } from '../../../../../models/Point';
 import { Vote } from '../../../../../models/Vote';
-import { resolveBackendFileUrl } from '../../../../../utils/file-url';
+import { getDescendantCategoryIds, resolveCategoryDisplayImageUrl } from '../../../../../utils/category-image-url';
 import { AnnotationExplorerItem, AnnotationPolygon, CategoryTreeNode } from '../models/annotation-explorer.model';
 import { Annotation } from '../../../../../models/Annotation';
 
 const CATEGORY_COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b', '#14b8a6'];
-const DEFAULT_CATEGORY_IMAGES = [
-  {
-    aliases: ['infrastructure', 'infraestructure', 'inftrastructure', 'infraestructura', 'infraestructuras'],
-    imageUrl: '/infrastructure.png',
-  },
-  {
-    aliases: ['roads and sidewalks', 'road and sidewalk', 'vias y andenes', 'andenes', 'sidewalk'],
-    imageUrl: '/street.png',
-  },
-];
 
 export function buildAnnotationItems(
   annotations: Annotation[],
@@ -82,23 +72,7 @@ export function getCategoryColor(categoryId: number | null): string {
 }
 
 export function getCategoryMarkerImage(category: Category | null): string | null {
-  if (!category) return null;
-
-  const imageUrl = category.image_url?.trim();
-  if (imageUrl) return resolveBackendFileUrl(imageUrl);
-
-  const normalizedName = normalizeCategoryName(category.name);
-  const defaultImage = DEFAULT_CATEGORY_IMAGES.find((item) =>
-    item.aliases.some((alias) => normalizedName.includes(normalizeCategoryName(alias))),
-  );
-
-  return defaultImage?.imageUrl ?? null;
-}
-
-export function getDescendantCategoryIds(category: Category, categories: Category[]): number[] {
-  const categoryId = Number(category.id_category);
-  const children = categories.filter((item) => Number(item.id_parent_category) === categoryId);
-  return [categoryId, ...children.flatMap((child) => getDescendantCategoryIds(child, categories))];
+  return resolveCategoryDisplayImageUrl(category);
 }
 
 export function getNeighborhoodPolygons(
@@ -143,10 +117,3 @@ function getAverageRating(votes: Vote[]): number {
   return votes.reduce((sum, vote) => sum + Number(vote.stars), 0) / votes.length;
 }
 
-function normalizeCategoryName(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .toLowerCase();
-}

@@ -100,7 +100,7 @@
 
 .filter-label {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 9px;
   color: #34405f;
@@ -112,6 +112,27 @@
   input {
     accent-color: #2563eb;
   }
+
+  span {
+    min-width: 0;
+  }
+}
+
+.filter-label__image,
+.filter-label__image-spacer {
+  width: 24px;
+  height: 24px;
+}
+
+.filter-label__image {
+  border-radius: 6px;
+  object-fit: contain;
+  background: #eef2f7;
+  padding: 2px;
+}
+
+.filter-label__image-spacer {
+  display: inline-block;
 }
 
 .filter-children {

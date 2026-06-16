@@ -3,7 +3,7 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, computed, input, output, signal } fr
 import { FormsModule } from '@angular/forms';
 import { Category } from '../../../../../models/Category';
 import { Entity } from '../../../../../models/Entity';
-import { resolveCategoryImageUrl } from '../../../../../utils/category-image-url';
+import { normalizeCategoryName, resolveCategoryDisplayImageUrl } from '../../../../../utils/category-image-url';
 import { AnnotationFormValue } from '../../models/annotation-map.model';
 
 @Component({
@@ -32,9 +32,9 @@ export class AnnotationFormComponent {
   readonly brokenCategoryImageIds = signal<Set<number>>(new Set<number>());
 
   readonly filteredCategories = computed(() => {
-    const query = this.categoryQuery().trim().toLowerCase();
+    const query = normalizeCategoryName(this.categoryQuery());
     return this.categories().filter((category) =>
-      category.status === 'active' && (!query || category.name.toLowerCase().includes(query)),
+      category.status === 'active' && (!query || normalizeCategoryName(category.name).includes(query)),
     );
   });
 
@@ -67,11 +67,11 @@ export class AnnotationFormComponent {
   }
 
   hasCategoryImage(category: Category): boolean {
-    return Boolean(category.image_url) && !this.brokenCategoryImageIds().has(category.id_category);
+    return Boolean(resolveCategoryDisplayImageUrl(category)) && !this.brokenCategoryImageIds().has(category.id_category);
   }
 
   resolveCategoryImage(category: Category): string {
-    return resolveCategoryImageUrl(category.image_url);
+    return resolveCategoryDisplayImageUrl(category) ?? '';
   }
 
   onCategoryImageError(categoryId: number): void {
@@ -79,10 +79,11 @@ export class AnnotationFormComponent {
   }
 
   getCategoryIcon(category: Category): string {
-    const name = category.name.toLowerCase();
+    const name = normalizeCategoryName(category.name);
 
     if (name.includes('seguridad')) return 'solar:shield-bold';
     if (name.includes('infraestructura')) return 'solar:buildings-2-bold';
+    if (name.includes('road') || name.includes('sidewalk')) return 'solar:streets-map-point-bold';
     if (name.includes('via') || name.includes('tránsito') || name.includes('transito')) return 'solar:streets-map-point-bold';
     if (name.includes('servicio')) return 'solar:plug-bold';
     if (name.includes('ambiente') || name.includes('medio')) return 'solar:leaf-bold';

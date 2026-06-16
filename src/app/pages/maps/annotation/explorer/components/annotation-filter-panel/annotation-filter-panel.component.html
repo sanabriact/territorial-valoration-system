@@ -39,6 +39,11 @@
               type="checkbox"
               [checked]="isSelected(category.id_category)"
               (change)="toggleCategory.emit(category.id_category)">
+            @if(resolveCategoryImage(category); as imageUrl) {
+              <img class="filter-label__image" [src]="imageUrl" [alt]="category.name">
+            } @else {
+              <span class="filter-label__image-spacer"></span>
+            }
             <span>{{ category.name }}</span>
             <em>{{ category.annotationCount }}</em>
           </label>
@@ -54,6 +59,11 @@
                     type="checkbox"
                     [checked]="isSelected(child.id_category)"
                     (change)="toggleCategory.emit(child.id_category)">
+                  @if(resolveCategoryImage(child); as imageUrl) {
+                    <img class="filter-label__image" [src]="imageUrl" [alt]="child.name">
+                  } @else {
+                    <span class="filter-label__image-spacer"></span>
+                  }
                   <span>{{ child.name }}</span>
                   <em>{{ child.annotationCount }}</em>
                 </label>
